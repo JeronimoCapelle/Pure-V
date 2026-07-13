@@ -1,0 +1,47 @@
+addi x3,x0,0
+addi x4,x0,10
+loop:
+bge x3,x4,exit
+addi x3,x3,1
+jal x0,loop
+exit:
+xor t2,x4,x0
+xori t3,t2,1
+and x0,x3,x4
+addi t1,x0,32768
+addi x4,x0,1000
+lh t1,4(x4)
+lhu t1,4(x4)
+lw t1,4(x4)
+lb t2,6(x4)
+lbu t2,6(x4)
+_start:
+addi x10,zero,0b0010_1010
+add a1,x10,sp
+sub t0,a1,gp
+bitwise_fun:
+andi t1,t0,0x0F
+ori x7,t1,0b101
+xori x28,x7,-12
+slli t3,x28,4
+srli t4,t3,1
+and a2,t3,t4
+or a3,a2,t0
+xor a4,a3,x7
+sb a4,-4(sp)
+lb a5,-4(sp)
+sw a5,0(gp)
+lw a6,0(gp)
+branch_checks:
+beq a6,zero,_exit
+bne a5,a6,test_blt
+test_blt:
+blt a4,a5,test_bge
+test_bge:
+bge a3,a4,test_jal
+test_jal:
+jal ra,my_function
+my_function:
+jalr zero,0(ra)
+_exit:
+beq zero,zero,_exit

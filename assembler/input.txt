@@ -1,0 +1,100 @@
+addi x3,x0,0    # i = 0
+addi x4,x0,10   # const 10
+loop:
+   bge  x3,x4, exit
+   addi x3,x3,1
+   jal x0,loop
+exit: xor t2, x4, x0
+      xori t3, t2, 1
+      and x0, x3, x4
+addi t1, x0, 32768 
+addi x4,x0,1000
+lh t1, 4(x4)
+lhu t1, 4(x4)
+lw t1, 4(x4)
+lb t2, 6(x4)
+lbu t2, 6(x4)
+
+
+# ==============================================================================
+# RISC-V RV32I Test Program (21 Core Instructions & Assembly Parser Edge Cases)
+# ==============================================================================
+# This program is designed to test your parser's ability to handle all 21 of 
+# your target instructions, as well as whitespaces, comment formats, register 
+# aliases, memory syntax, and various literal number formats.
+# ==============================================================================
+
+_start:
+    # 1. ADDI: Spacing variations, tabs, comments, and binary literals with underscores
+    addi	x10, zero, 0b0010_1010	# ABI: "addi a0, zero, 42" -> loads decimal 42
+
+    # 2. ADD: Spacing without tabs, register ABI aliases, and trailing double-slash comments
+    add a1,  x10,  sp // Adds loaded value to stack pointer (sp / x2)
+
+    # 3. SUB: Spacing stripped around commas, mix of raw registers and ABI aliases
+    sub	t0,a1,gp
+
+bitwise_fun:
+    # 4. ANDI: Label on the same line as the instruction, hexadecimal literals
+    andi t1, t0, 0x0F   # Checks if lower bits are isolated
+
+    # 5. ORI: Odd/uneven spaces around commas
+    ori   x7,   t1   ,0b101
+
+    # 6. XORI: Signed negative immediate values
+    xori x28, x7, -12 // Checks logic inversion with signed integers
+
+    # 7. SLLI: I-Type shifts using shift amount (shamt)
+    slli t3, x28, 4
+
+    # 8. SRLI: Check right logic shift
+    srli t4, t3, 1
+
+    # 9. AND: Pure register R-Type operation
+    and a2, t3, t4
+
+    # 10. OR: R-Type register mapping
+    or a3, a2, t0
+
+    # 11. XOR: R-Type XOR check
+    xor a4, a3, x7
+
+    # 12. SB: Memory store byte with negative offset parenthesis syntax
+    sb a4, -4(sp)  # Stores lower byte to stack
+
+    # 13. LB: Memory load byte
+    lb a5, -4(sp)
+
+    # 14. SW: Memory store word with spaces inside parenthesis
+    sw a5, 0( gp )
+
+    # 15. LW: Memory load word
+    lw a6, 0(gp)
+
+branch_checks:
+    # 16. BEQ: Simple branch conditional check
+    beq a6, zero, _exit
+
+    # 17. BNE: Branch conditional with trailing double-slash comment
+    bne a5, a6, test_blt // Jumps if byte and word values diverge
+
+test_blt:
+    # 18. BLT: Signed comparison branch check
+    blt a4, a5, test_bge
+
+test_bge:
+    # 19. BGE: Signed comparison greater/equal branch check
+    bge a3, a4, test_jal
+
+test_jal:
+    # 20. JAL: Jump and link relative jump to function
+    jal ra, my_function
+
+my_function:
+    # 21. JALR: Return from function (equivalent to pseudo-instruction "ret")
+    # Implements indirect jump using register offset
+    jalr zero, 0(ra)
+
+_exit:
+    # Terminating infinite loop to catch the program exit point
+    beq zero, zero, _exit

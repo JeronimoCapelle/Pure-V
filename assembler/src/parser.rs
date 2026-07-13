@@ -1,146 +1,118 @@
-use crate::opcode::{Opcode, RType, Register};
+use crate::opcode::{
+    BType, BigLabel, IType, ITypeJump, ITypeMemory, ITypeShifts, Immediate, JType, Label, Offset,
+    Opcode,
+    ParsingError::{
+        self, EmptyLineError, NonExistentOpcodeError, NonExistentRegisterError, TexttoNumericError,
+        WrongArgumentCountError,
+    },
+    RType, Register, STypeMemory, Shamt,
+};
 
-pub fn parse_opcode(input: &str) -> Opcode {
-    let split: Vec<&str> = input.split_whitespace().collect();
-
-    if split.is_empty() {
-        return Opcode::NOP;
-    }
-
-    let (inst, args) = split.split_first().unwrap();
-    let inst = *inst;
-    let args = {
-        let mut new_args = Vec::<&str>::new();
-        for i in args {
-            new_args.push(i.trim_matches(','));
-        }
-        new_args
+pub fn parse_opcode(input: &str) -> std::result::Result<Opcode, ParsingError> {
+    let (inst, args) = match input.split_once(char::is_whitespace) {
+        None => return Err(NonExistentOpcodeError),
+        Some(a) => a,
     };
 
-    match inst {
-        "add" => Opcode::ADD(generate_R_type(args)),
-        "sub" => Opcode::SUB(generate_R_type(args)),
-        "or" => Opcode::OR(generate_R_type(args)),
-        "and" => Opcode::AND(generate_R_type(args)),
-        "xor" => Opcode::XOR(generate_R_type(args)),
-        _ => todo!(),
-    }
+    Ok(match inst {
+        "add" => Opcode::ADD(generate_rtype(args)?),
+        "sub" => Opcode::SUB(generate_rtype(args)?),
+        "or" => Opcode::OR(generate_rtype(args)?),
+        "and" => Opcode::AND(generate_rtype(args)?),
+        "xor" => Opcode::XOR(generate_rtype(args)?),
+
+        "addi" => Opcode::ADDI(generate_itype(args)?),
+        "andi" => Opcode::ANDI(generate_itype(args)?),
+        "xori" => Opcode::XORI(generate_itype(args)?),
+        "orii" => Opcode::ORI(generate_itype(args)?),
+
+        "slli" => Opcode::SLLI(generate_itype_shifts(args)?),
+        "srli" => Opcode::SRLI(generate_itype_shifts(args)?),
+
+        "lw" => Opcode::LW(generate_itype_memory(args)?),
+        "lb" => Opcode::LB(generate_itype_memory(args)?),
+
+        "sw" => Opcode::SW(generate_stype_memory(args)?),
+        "sb" => Opcode::SB(generate_stype_memory(args)?),
+
+        "beq" => Opcode::BEQ(generate_btype(args)?),
+        "bne" => Opcode::BNE(generate_btype(args)?),
+        "blt" => Opcode::BLT(generate_btype(args)?),
+        "bge" => Opcode::BGE(generate_btype(args)?),
+
+        "jal" => Opcode::JAL(generate_jtype(args)?),
+
+        "jalr" => Opcode::JALR(generate_itype_jump(args)?),
+
+        _ => return Err(NonExistentOpcodeError),
+    })
 }
 
-fn generate_r_type(args: Vec<&str>) -> RType {
-    assert!(args.len() == 3);
+// ---
 
-    RType(
-        parse_register(args[0]),
-        parse_register(args[1]),
-        parse_register(args[2]),
-    )
+fn generate_jtype(args: &str) -> Result<JType, ParsingError> {
+    todo!()
 }
 
-fn parse_register(string: &str) -> Register {
-    match string {
-        "x0" => Register::X0,
-        "zero" => Register::X0,
+fn generate_btype(args: &str) -> Result<BType, ParsingError> {
+    todo!()
+}
 
-        "x1" => Register::X1,
-        "ra" => Register::X1,
+fn generate_stype_memory(args: &str) -> Result<STypeMemory, ParsingError> {
+    todo!()
+}
 
-        "x2" => Register::X2,
-        "sp" => Register::X2,
+fn generate_itype_memory(args: &str) -> Result<ITypeMemory, ParsingError> {
+    todo!()
+}
 
-        "x3" => Register::X3,
-        "gp" => Register::X3,
+fn generate_itype_shifts(args: &str) -> Result<ITypeShifts, ParsingError> {
+    todo!()
+}
 
-        "x4" => Register::X4,
-        "tp" => Register::X4,
+fn generate_itype_jump(args: &str) -> Result<ITypeJump, ParsingError> {
+    todo!()
+}
 
-        //---
-        "x5" => Register::X5,
-        "t0" => Register::X5,
+fn generate_itype(args: &str) -> Result<IType, ParsingError> {
+    todo!()
+}
 
-        "x6" => Register::X6,
-        "t1" => Register::X6,
+fn generate_rtype(args: &str) -> Result<RType, ParsingError> {
+    Ok(RType {
+        destination: Register::new(args[0])?,
+        first_source: Register::new(args[1])?,
+        second_source: Register::new(args[2])?,
+    })
+}
 
-        "x7" => Register::X7,
-        "t2" => Register::X7,
+// ----
 
-        //---
-        "x8" => Register::X8,
-        "fp" => Register::X8,
-        "s0" => Register::X8,
+fn parse_immediate(string: &str) -> Result<Immediate, ParsingError> {
+    Ok(Immediate::new(string)?)
+}
 
-        "x9" => Register::X9,
-        "s1" => Register::X9,
+fn parse_shamt(string: &str) -> Result<Shamt, ParsingError> {
+    let value = match string.parse::<u8>() {
+        Ok(a) => a,
+        Err(_) => return Err(TexttoNumericError),
+    };
+    Ok(Shamt::new(value)?)
+}
 
-        "x10" => Register::X10,
-        "a0" => Register::X10,
+fn parse_offset(string: &str) -> Result<Offset, ParsingError> {
+    let value = match string.parse::<i16>() {
+        Ok(a) => a,
+        Err(_) => return Err(TexttoNumericError),
+    };
 
-        //---
-        "x11" => Register::X11,
-        "a1" => Register::X11,
+    Ok(Offset::new(value)?)
+}
 
-        "x12" => Register::X12,
-        "a2" => Register::X12,
+fn parse_label(string: &str) -> Result<Label, ParsingError> {
+    todo!()
+}
 
-        "x13" => Register::X13,
-        "a3" => Register::X13,
-
-        "x14" => Register::X14,
-        "a4" => Register::X14,
-
-        "x15" => Register::X15,
-        "a5" => Register::X15,
-
-        "x16" => Register::X16,
-        "a6" => Register::X16,
-
-        "x17" => Register::X17,
-        "a7" => Register::X17,
-
-        //---
-        "x18" => Register::X18,
-        "s2" => Register::X18,
-
-        "x19" => Register::X19,
-        "s3" => Register::X19,
-
-        "x20" => Register::X20,
-        "s4" => Register::X20,
-
-        "x21" => Register::X21,
-        "s5" => Register::X21,
-
-        "x22" => Register::X22,
-        "s6" => Register::X22,
-
-        "x23" => Register::X23,
-        "s7" => Register::X23,
-
-        "x24" => Register::X24,
-        "s8" => Register::X24,
-
-        "x25" => Register::X25,
-        "s9" => Register::X25,
-
-        "x26" => Register::X26,
-        "s10" => Register::X26,
-
-        "x27" => Register::X27,
-        "s11" => Register::X27,
-
-        //---
-        "x28" => Register::X28,
-        "t3" => Register::X28,
-
-        "x29" => Register::X29,
-        "t4" => Register::X29,
-
-        "x30" => Register::X30,
-        "t5" => Register::X30,
-
-        "x31" => Register::X31,
-        "t6" => Register::X31,
-
-        _ => panic!("Non existent register"),
-    }
+fn parse_big_label(string: &str) -> Result<BigLabel, ParsingError> {
+    todo!()
 }
