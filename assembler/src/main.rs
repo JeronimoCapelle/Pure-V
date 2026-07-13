@@ -4,6 +4,8 @@ mod file_cleaner;
 mod label_parse;
 mod opcode;
 mod parser;
+mod tokenizer;
+mod tokens;
 
 fn main() {
     let mut args = std::env::args().skip(1);
