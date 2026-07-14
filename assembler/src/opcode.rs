@@ -1,5 +1,11 @@
-use crate::opcode::ParsingError::{BiggerValueError, NonExistentRegisterError, SmallerValueError};
+use crate::{
+    opcode::ParsingError::{
+        BiggerValueError, NonExistentRegisterError, SmallerValueError, SymbolError,
+    },
+    tokens::Token,
+};
 
+#[derive(Debug)]
 pub enum ParsingError {
     BiggerValueError,
     SmallerValueError,
@@ -7,9 +13,11 @@ pub enum ParsingError {
     NonExistentRegisterError,
     WrongArgumentCountError,
     NonExistentOpcodeError,
+    TokenizerError,
+    SymbolError,
 }
 
-pub enum Opcode {
+pub enum Mnemonic {
     ADDI(IType),
     ADD(RType),
     SUB(RType),
@@ -181,8 +189,15 @@ pub enum Register {
 }
 
 impl Register {
-    pub fn new(string: &str) -> Result<Register, ParsingError> {
-        Ok(match string {
+    pub fn new(token: &Token) -> Result<Register, ParsingError> {
+        let name = match token {
+            Token::Identifier(a) => a,
+            _ => {
+                return Err(SymbolError);
+            }
+        };
+
+        Ok(match name.as_str() {
             "x0" => Register::X0,
             "zero" => Register::X0,
 

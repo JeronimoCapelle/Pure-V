@@ -1,85 +1,102 @@
-use crate::tokens::Token;
+use crate::{
+    opcode::ParsingError::{self, TokenizerError},
+    tokens::Token,
+};
 
-pub fn tokenize_contents(contents: &str) -> Vec<Vec<Token>> {
-    let contents: Vec<&str> = contents.split('\n').collect();
+pub fn tokenize_contents(contents: &str) -> Result<Vec<Token>, ParsingError> {
+    let contents: Vec<char> = contents.chars().collect();
 
-    let mut tokenized_contents: Vec<Vec<Token>> = Vec::new();
-
-    for i in 0..contents.len() {
-        let chars = contents[i].chars().collect();
-        let token_line = tokenize_line(chars);
-        if !token_line.is_empty() {
-            tokenized_contents.push(token_line);
-        }
-    }
-    tokenized_contents
-}
-
-fn tokenize_line(chars: Vec<char>) -> Vec<Token> {
-    let mut holder: Vec<Token> = Vec::new();
+    let mut tokenized_contents: Vec<Token> = Vec::new();
 
     let mut i = 0;
 
-    while i < chars.len() {
-        match chars[i] {
+    while i < contents.len() {
+        match contents[i] {
             char if char.is_whitespace() => {
                 i += 1;
             }
             '#' => {
-                i = chars.len();
+                while contents[i] != '\n' {
+                    i += 1;
+                }
             }
             '/' => {
-                if i + 1 < chars.len() && chars[i] == chars[i + 1] {
-                    i = chars.len();
+                if i + 1 < contents.len() && contents[i] == contents[i + 1] {
+                    while contents[i] != '\n' {
+                        i += 1;
+                    }
                 }
             }
             ',' => {
-                holder.push(Token::Coma);
+                tokenized_contents.push(Token::Coma);
                 i += 1;
             }
             ':' => {
-                holder.push(Token::Colon);
+                tokenized_contents.push(Token::Colon);
                 i += 1;
             }
             '(' => {
-                holder.push(Token::OpeningParenthesis);
+                tokenized_contents.push(Token::OpeningParenthesis);
                 i += 1;
             }
             ')' => {
-                holder.push(Token::ClosingParenthesis);
+                tokenized_contents.push(Token::ClosingParenthesis);
                 i += 1;
             }
-
+            '\n' => {
+                tokenized_contents.push(Token::NewLine);
+                i += 1;
+            }
             char if char.is_numeric() || char.eq(&'+') || char.eq(&'-') => {
-                let end = chars
+                let end = contents
                     .iter()
                     .skip(i)
                     .position(|x| {
-                        *x == ' ' || *x == '\t' || *x == ':' || *x == ',' || *x == '(' || *x == ')'
+                        *x == '/'
+                            || *x == '#'
+                            || *x == '\n'
+                            || *x == ' '
+                            || *x == '\t'
+                            || *x == ':'
+                            || *x == ','
+                            || *x == '('
+                            || *x == ')'
                     })
-                    .unwrap_or(chars.len() - i);
+                    .unwrap_or(contents.len());
 
-                holder.push(Token::Literal(chars[i..i + end].iter().collect::<String>()));
+                tokenized_contents.push(Token::Literal(
+                    contents[i..i + end].iter().collect::<String>(),
+                ));
                 i += end;
             }
 
             char if char.is_alphabetic() || char.eq(&'_') => {
-                let end = chars
+                let end = contents
                     .iter()
                     .skip(i)
                     .position(|x| {
-                        *x == ' ' || *x == '\t' || *x == ':' || *x == ',' || *x == '(' || *x == ')'
+                        *x == '/'
+                            || *x == '#'
+                            || *x == '\n'
+                            || *x == ' '
+                            || *x == '\t'
+                            || *x == ':'
+                            || *x == ','
+                            || *x == '('
+                            || *x == ')'
                     })
-                    .unwrap_or(chars.len() - i);
+                    .unwrap_or(contents.len());
 
-                holder.push(Token::Identifier(
-                    chars[i..i + end].iter().collect::<String>(),
+                tokenized_contents.push(Token::Identifier(
+                    contents[i..i + end].iter().collect::<String>(),
                 ));
                 i += end;
             }
-            _ => {}
+            _ => {
+                return Err(TokenizerError);
+            }
         };
     }
 
-    holder
+    Ok(tokenized_contents)
 }

@@ -1,48 +1,60 @@
-use crate::opcode::{
-    BType, BigLabel, IType, ITypeJump, ITypeMemory, ITypeShifts, Immediate, JType, Label, Offset,
-    Opcode,
-    ParsingError::{
-        self, EmptyLineError, NonExistentOpcodeError, NonExistentRegisterError, TexttoNumericError,
-        WrongArgumentCountError,
-    },
-    RType, Register, STypeMemory, Shamt,
+use std::collections::HashMap;
+
+use crate::{
+    opcode::{ParsingError::SymbolError, *},
+    tokens::Token,
 };
 
-pub fn parse_opcode(input: &str) -> std::result::Result<Opcode, ParsingError> {
-    let (inst, args) = match input.split_once(char::is_whitespace) {
-        None => return Err(NonExistentOpcodeError),
-        Some(a) => a,
+pub fn tokens_to_instructions(
+    tokens: Vec<Token>,
+    symbol_table: &HashMap<String, u32>,
+) -> Result<Vec<Mnemonic>, ParsingError> {
+    let mut program: Vec<Mnemonic> = Vec::new();
+    for line in tokens.split(|t| *t == Token::NewLine) {
+        program.push(parse_instruction(&line.to_vec())?);
+    }
+    Ok(program)
+}
+
+fn parse_instruction(input: &Vec<Token>) -> std::result::Result<Mnemonic, ParsingError> {
+    let mnemonic = match &input[0] {
+        Token::Identifier(a) => a,
+        _ => {
+            return Err(SymbolError);
+        }
     };
 
-    Ok(match inst {
-        "add" => Opcode::ADD(generate_rtype(args)?),
-        "sub" => Opcode::SUB(generate_rtype(args)?),
-        "or" => Opcode::OR(generate_rtype(args)?),
-        "and" => Opcode::AND(generate_rtype(args)?),
-        "xor" => Opcode::XOR(generate_rtype(args)?),
+    let args = &input[1..];
 
-        "addi" => Opcode::ADDI(generate_itype(args)?),
-        "andi" => Opcode::ANDI(generate_itype(args)?),
-        "xori" => Opcode::XORI(generate_itype(args)?),
-        "orii" => Opcode::ORI(generate_itype(args)?),
+    Ok(match mnemonic {
+        "add" => Mnemonic::ADD(generate_rtype(args)?),
+        "sub" => Mnemonic::SUB(generate_rtype(args)?),
+        "or" => Mnemonic::OR(generate_rtype(args)?),
+        "and" => Mnemonic::AND(generate_rtype(args)?),
+        "xor" => Mnemonic::XOR(generate_rtype(args)?),
 
-        "slli" => Opcode::SLLI(generate_itype_shifts(args)?),
-        "srli" => Opcode::SRLI(generate_itype_shifts(args)?),
+        "addi" => Mnemonic::ADDI(generate_itype(args)?),
+        "andi" => Mnemonic::ANDI(generate_itype(args)?),
+        "xori" => Mnemonic::XORI(generate_itype(args)?),
+        "orii" => Mnemonic::ORI(generate_itype(args)?),
 
-        "lw" => Opcode::LW(generate_itype_memory(args)?),
-        "lb" => Opcode::LB(generate_itype_memory(args)?),
+        "slli" => Mnemonic::SLLI(generate_itype_shifts(args)?),
+        "srli" => Mnemonic::SRLI(generate_itype_shifts(args)?),
 
-        "sw" => Opcode::SW(generate_stype_memory(args)?),
-        "sb" => Opcode::SB(generate_stype_memory(args)?),
+        "lw" => Mnemonic::LW(generate_itype_memory(args)?),
+        "lb" => Mnemonic::LB(generate_itype_memory(args)?),
 
-        "beq" => Opcode::BEQ(generate_btype(args)?),
-        "bne" => Opcode::BNE(generate_btype(args)?),
-        "blt" => Opcode::BLT(generate_btype(args)?),
-        "bge" => Opcode::BGE(generate_btype(args)?),
+        "sw" => Mnemonic::SW(generate_stype_memory(args)?),
+        "sb" => Mnemonic::SB(generate_stype_memory(args)?),
 
-        "jal" => Opcode::JAL(generate_jtype(args)?),
+        "beq" => Mnemonic::BEQ(generate_btype(args)?),
+        "bne" => Mnemonic::BNE(generate_btype(args)?),
+        "blt" => Mnemonic::BLT(generate_btype(args)?),
+        "bge" => Mnemonic::BGE(generate_btype(args)?),
 
-        "jalr" => Opcode::JALR(generate_itype_jump(args)?),
+        "jal" => Mnemonic::JAL(generate_jtype(args)?),
+
+        "jalr" => Mnemonic::JALR(generate_itype_jump(args)?),
 
         _ => return Err(NonExistentOpcodeError),
     })
@@ -74,15 +86,19 @@ fn generate_itype_jump(args: &str) -> Result<ITypeJump, ParsingError> {
     todo!()
 }
 
-fn generate_itype(args: &str) -> Result<IType, ParsingError> {
-    todo!()
+fn generate_itype(args: &[Token]) -> Result<IType, ParsingError> {
+    Ok(IType {
+        destination: Register::new(&args[0]),
+        source: Register::new(&args[2]),
+        immediate: Immediate,
+    })
 }
 
-fn generate_rtype(args: &str) -> Result<RType, ParsingError> {
+fn generate_rtype(args: &[Token]) -> Result<RType, ParsingError> {
     Ok(RType {
-        destination: Register::new(args[0])?,
-        first_source: Register::new(args[1])?,
-        second_source: Register::new(args[2])?,
+        destination: Register::new(&args[0])?,
+        first_source: Register::new(&args[2])?,
+        second_source: Register::new(&args[4])?,
     })
 }
 
