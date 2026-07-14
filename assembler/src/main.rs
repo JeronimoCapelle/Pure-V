@@ -1,5 +1,4 @@
 mod file_cleaner;
-mod label_parse;
 mod label_resolver;
 mod opcode;
 mod parser;
@@ -17,5 +16,5 @@ fn main() {
     let tokens = tokenizer::tokenize_contents(&clean_file_contents);
 
     let labels = symbol_table::generate_symbol_table(&tokens);
-    let label_free_tokens = std::fs::write("output.txt", clean_file_contents);
+    let label_free_tokens = label_resolver::resolve_labels(&tokens, &labels);
 }
