@@ -1,0 +1,1 @@
+fn label_resolver() {}

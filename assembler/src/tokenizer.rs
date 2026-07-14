@@ -1,8 +1,21 @@
 use crate::tokens::Token;
 
-fn tokenize_contents(contents: &str) -> Vec<Token> {
-    let chars: Vec<char> = contents.chars().collect();
+pub fn tokenize_contents(contents: &str) -> Vec<Vec<Token>> {
+    let contents: Vec<&str> = contents.split('\n').collect();
 
+    let mut tokenized_contents: Vec<Vec<Token>> = Vec::new();
+
+    for i in 0..contents.len() {
+        let chars = contents[i].chars().collect();
+        let token_line = tokenize_line(chars);
+        if !token_line.is_empty() {
+            tokenized_contents.push(token_line);
+        }
+    }
+    tokenized_contents
+}
+
+fn tokenize_line(chars: Vec<char>) -> Vec<Token> {
     let mut holder: Vec<Token> = Vec::new();
 
     let mut i = 0;
@@ -13,19 +26,11 @@ fn tokenize_contents(contents: &str) -> Vec<Token> {
                 i += 1;
             }
             '#' => {
-                i += chars
-                    .iter()
-                    .skip(i)
-                    .position(|x| *x == '\n')
-                    .unwrap_or(chars.len());
+                i = chars.len();
             }
             '/' => {
                 if i + 1 < chars.len() && chars[i] == chars[i + 1] {
-                    i += chars
-                        .iter()
-                        .skip(i)
-                        .position(|x| *x == '\n')
-                        .unwrap_or(chars.len());
+                    i = chars.len();
                 }
             }
             ',' => {
@@ -50,13 +55,7 @@ fn tokenize_contents(contents: &str) -> Vec<Token> {
                     .iter()
                     .skip(i)
                     .position(|x| {
-                        *x == '\n'
-                            || *x == ' '
-                            || *x == '\t'
-                            || *x == ':'
-                            || *x == ','
-                            || *x == '('
-                            || *x == ')'
+                        *x == ' ' || *x == '\t' || *x == ':' || *x == ',' || *x == '(' || *x == ')'
                     })
                     .unwrap_or(chars.len() - i);
 
@@ -69,13 +68,7 @@ fn tokenize_contents(contents: &str) -> Vec<Token> {
                     .iter()
                     .skip(i)
                     .position(|x| {
-                        *x == '\n'
-                            || *x == ' '
-                            || *x == '\t'
-                            || *x == ':'
-                            || *x == ','
-                            || *x == '('
-                            || *x == ')'
+                        *x == ' ' || *x == '\t' || *x == ':' || *x == ',' || *x == '(' || *x == ')'
                     })
                     .unwrap_or(chars.len() - i);
 
@@ -84,9 +77,7 @@ fn tokenize_contents(contents: &str) -> Vec<Token> {
                 ));
                 i += end;
             }
-            _ => {
-                i += 1;
-            }
+            _ => {}
         };
     }
 
