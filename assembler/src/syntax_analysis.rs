@@ -173,22 +173,29 @@ fn generate_itype_shifts(operands: &[Token]) -> Result<ITypeShifts, TrackedError
 }
 
 fn generate_itype_jump(operands: &[Token]) -> Result<ITypeJump, TrackedError> {
-    if operands.len() != 6
-        || !operands[1].eq(&Token::Comma)
-        || !operands[3].eq(&Token::OpeningParenthesis)
-        || !operands[5].eq(&Token::ClosingParenthesis)
+    if operands.len() == 6
+        && operands[1].eq(&Token::Comma)
+        && operands[3].eq(&Token::OpeningParenthesis)
+        && operands[5].eq(&Token::ClosingParenthesis)
     {
-        return Err(TrackedError {
-            kind: WrongArgument,
-            line: line!(),
-            file: file!(),
+        return Ok(ITypeJump {
+            destination: Register::new(&operands[0])?,
+            offset: Offset::new(&operands[2])?,
+            target_address: Register::new(&operands[4])?,
+        });
+    } else if operands.len() == 5 && operands[1].eq(&Token::Comma) && operands[3].eq(&Token::Comma)
+    {
+        return Ok(ITypeJump {
+            destination: Register::new(&operands[0])?,
+            target_address: Register::new(&operands[2])?,
+            offset: Offset::new(&operands[4])?,
         });
     }
 
-    Ok(ITypeJump {
-        destination: Register::new(&operands[0])?,
-        offset: Offset::new(&operands[2])?,
-        target_address: Register::new(&operands[4])?,
+    Err(TrackedError {
+        kind: WrongArgument,
+        line: line!(),
+        file: file!(),
     })
 }
 
@@ -222,4 +229,33 @@ fn generate_rtype(operands: &[Token]) -> Result<RType, TrackedError> {
         first_source: Register::new(&operands[2])?,
         second_source: Register::new(&operands[4])?,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+
+    use crate::{
+        lexical_analysis::tokenize,
+        structures::{Instruction, Offset, Register, STypeMemory, Token},
+        syntax_analysis::parse_statement,
+    };
+
+    #[test]
+    fn load() {
+        let inst = parse_statement(
+            tokenize("sw x7, 2044(x0)").unwrap().as_slice(),
+            &HashMap::new(),
+            0,
+        )
+        .unwrap();
+
+        let ideal = Instruction::SW(STypeMemory {
+            source: Register::X7,
+            offset: Offset::new(&Token::Literal("2044".to_string())).unwrap(),
+            base_address: Register::X0,
+        });
+
+        assert_eq!(inst, ideal);
+    }
 }

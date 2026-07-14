@@ -63,7 +63,11 @@ pub fn tokenize(contents: &str) -> Result<Vec<Token>, TrackedError> {
                     .unwrap_or(contents.len() - i);
 
                 tokens.push(Token::Literal(
-                    contents[i..i + end].iter().collect::<String>(),
+                    contents[i..i + end]
+                        .iter()
+                        .collect::<String>()
+                        .trim()
+                        .to_string(),
                 ));
                 i += end;
             }
@@ -86,7 +90,11 @@ pub fn tokenize(contents: &str) -> Result<Vec<Token>, TrackedError> {
                     .unwrap_or(contents.len() - i);
 
                 tokens.push(Token::Identifier(
-                    contents[i..i + end].iter().collect::<String>(),
+                    contents[i..i + end]
+                        .iter()
+                        .collect::<String>()
+                        .trim()
+                        .to_string(),
                 ));
                 i += end;
             }

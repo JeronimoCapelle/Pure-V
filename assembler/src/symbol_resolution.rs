@@ -34,3 +34,33 @@ pub fn collect_symbols(
 
     Ok((symbol_table, symbol_free_tokens))
 }
+
+#[cfg(test)]
+mod tests {
+
+    use crate::{lexical_analysis::tokenize, symbol_resolution::collect_symbols};
+
+    #[test]
+    fn empty_table() {
+        let token_inputs = tokenize("addi x1, x0,x3").unwrap();
+
+        let (hash_map, clean) = collect_symbols(&token_inputs).unwrap();
+
+        assert!(hash_map.is_empty());
+        assert_eq!(token_inputs, clean);
+    }
+
+    #[test]
+    fn one_label() {
+        let token_inputs = tokenize("addi x1, x0,x3\nlabel:").unwrap();
+        let expected_clean = tokenize("addi x1, x0,x3").unwrap();
+
+        let (hash_map, clean) = collect_symbols(&token_inputs).unwrap();
+
+        assert_eq!(hash_map.len(), 1);
+        assert!(hash_map.contains_key("label"));
+        assert_eq!(*hash_map.get("label").unwrap(), 4);
+
+        assert_eq!(clean, expected_clean);
+    }
+}

@@ -1,11 +1,6 @@
 use std::io::Write;
 
-mod code_generation;
-mod convert_bytes;
-mod lexical_analysis;
-mod structures;
-mod symbol_resolution;
-mod syntax_analysis;
+use assembler::compile_string;
 
 fn main() {
     let mut args = std::env::args().skip(1);
@@ -13,16 +8,9 @@ fn main() {
 
     let file_contents = std::fs::read_to_string(input_filename).expect("Failed to open file");
 
-    let tokens = lexical_analysis::tokenize(&file_contents).unwrap();
-
-    let (labels, tokens) = symbol_resolution::collect_symbols(&tokens).unwrap();
-
-    let statements = syntax_analysis::parse(&tokens, &labels).unwrap();
-
-    let packed_instructions = code_generation::assemble(statements);
-
-    let binary_instructions = convert_bytes::transform(packed_instructions).unwrap();
+    let binary = compile_string(&file_contents).unwrap();
 
     let mut file = std::fs::File::create("output.bin").unwrap();
-    file.write_all(binary_instructions.as_slice()).unwrap();
+
+    file.write_all(binary.as_slice()).unwrap();
 }

@@ -31,7 +31,7 @@ pub enum ParsingError {
 }
 
 //-----------------------
-
+#[derive(PartialEq, Eq, Debug)]
 pub enum Instruction {
     ADDI(IType),
     ADD(RType),
@@ -57,48 +57,48 @@ pub enum Instruction {
 }
 
 //--------------------------------------------------
-
+#[derive(PartialEq, Eq, Debug)]
 pub struct RType {
     pub destination: Register,
     pub first_source: Register,
     pub second_source: Register,
 }
-
+#[derive(PartialEq, Eq, Debug)]
 pub struct IType {
     pub destination: Register,
     pub source: Register,
     pub immediate: Immediate,
 }
-
+#[derive(PartialEq, Eq, Debug)]
 pub struct ITypeShifts {
     pub destination: Register,
     pub source: Register,
     pub shamt: Shamt,
 }
-
+#[derive(PartialEq, Eq, Debug)]
 pub struct ITypeMemory {
     pub destination: Register,
     pub offset: Offset,
     pub base_address: Register,
 }
-
+#[derive(PartialEq, Eq, Debug)]
 pub struct STypeMemory {
     pub source: Register,
     pub offset: Offset,
     pub base_address: Register,
 }
-
+#[derive(PartialEq, Eq, Debug)]
 pub struct BType {
     pub first_source: Register,
     pub second_source: Register,
     pub label: Label,
 }
-
+#[derive(PartialEq, Eq, Debug)]
 pub struct JType {
     pub destination: Register,
     pub big_label: BigLabel,
 }
-
+#[derive(PartialEq, Eq, Debug)]
 pub struct ITypeJump {
     pub destination: Register,
     pub offset: Offset,
@@ -106,7 +106,7 @@ pub struct ITypeJump {
 }
 
 //--------------------------------------------------
-
+#[derive(PartialEq, Eq, Debug)]
 pub struct Immediate(i16); // 12-bit signed integer (range: -2048 to 2047). Limit artificially
 
 impl Immediate {
@@ -181,7 +181,7 @@ impl Immediate {
         }
     }
 }
-
+#[derive(PartialEq, Eq, Debug)]
 pub struct Shamt(u8); //5-bit unsigned integer (range: 0 to 31 for 32-bit registers). Limit artificially
 
 impl Shamt {
@@ -247,7 +247,7 @@ impl Shamt {
         self.0 as u32
     }
 }
-
+#[derive(PartialEq, Eq, Debug)]
 pub struct Offset(i16); //12-bit signed immediate offset (range: -2048 to 2047 bytes). Limit artificially
 
 impl Offset {
@@ -325,6 +325,7 @@ impl Offset {
         }
     }
 }
+#[derive(PartialEq, Eq, Debug)]
 pub struct Label(i16); //12-bit signed PC-relative offset. limit artificially. multiple of 2 bytes
 
 impl Label {
@@ -385,6 +386,7 @@ impl Label {
         }
     }
 }
+#[derive(PartialEq, Eq, Debug)]
 pub struct BigLabel(i32); //20-bit signed PC-relative offset. Limit artificially. multiple of 2 bytes
 
 impl BigLabel {
@@ -446,7 +448,7 @@ impl BigLabel {
     }
 }
 //--------------------------------------------------
-
+#[derive(PartialEq, Eq, Debug)]
 pub enum Register {
     X0,
     X1,
