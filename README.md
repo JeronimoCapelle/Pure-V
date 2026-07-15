@@ -1,4 +1,4 @@
-# Forge RV32I: A Zero-Dependency RISC-V Assembler
+# Pure RV32I: A Zero-Dependency RISC-V Assembler
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![Rust](https://img.shields.io/badge/rust-stable-orange)
