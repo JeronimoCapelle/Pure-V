@@ -1,6 +1,52 @@
 [package]
-name = "assembler"
+name = "pure-rv32i"
 version = "0.1.0"
+authors = ["Jeronimo Capelle <jero.capelle@gmail.com>"]
 edition = "2024"
+description = "A purist, zero-dependency RISC-V 32I assembler built in Rust."
+readme = "README.md"
+repository = "https://github.com/JeronimoCapelle/Pure-RISCV32I-Assembler"
+license = "CC0-1.0"
+keywords = ["parser", "cli", "terminal","rust", "embedded"]
+categories = ["command-line-utilities","embedded","development-tools","encoding","parser-implementations"]
 
 [dependencies]
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = "deny"
+pedantic = "warn"
+
+
+
+[profile.dev]
+opt-level = 0
+debug = true
+debug-assertions = true
+overflow-checks = true
+incremental = true
+
+
+[profile.dev.package."*"]
+opt-level = 3
+
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "unwind"
+debug = "line-tables-only"
+strip = "none"
+debug-assertions = false
+overflow-checks = false
+
+[profile.max-perf]
+inherits = "release"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+debug = false
+strip = "symbols"

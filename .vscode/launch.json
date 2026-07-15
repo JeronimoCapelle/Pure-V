@@ -12,7 +12,7 @@
                     "--package=assembler"
                 ],
                 "filter": {
-                    "name": "assembler",
+                    "name": "pure-rv32i",
                     "kind": "bin"
                 }
             },

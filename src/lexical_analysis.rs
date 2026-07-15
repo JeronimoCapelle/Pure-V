@@ -105,7 +105,7 @@ pub fn tokenize(contents: &str) -> Result<Vec<Token>, TrackedError> {
                     file: file!(),
                 });
             }
-        };
+        }
     }
 
     Ok(tokens)
@@ -119,7 +119,7 @@ mod tests {
         assert_eq!(
             tokenize(" label_generic :   ").unwrap(),
             vec![Token::Identifier("label_generic".to_string()), Token::Colon]
-        )
+        );
     }
 
     #[test]
@@ -127,7 +127,7 @@ mod tests {
         assert_eq!(
             tokenize(" my_label : //Hello! ").unwrap(),
             vec![Token::Identifier("my_label".to_string()), Token::Colon]
-        )
+        );
     }
 
     #[test]
@@ -135,27 +135,27 @@ mod tests {
         assert_eq!(
             tokenize(" my_label : #    Hello!    ").unwrap(),
             vec![Token::Identifier("my_label".to_string()), Token::Colon]
-        )
+        );
     }
 
     #[test]
     fn empty() {
-        assert_eq!(tokenize("").unwrap(), vec![])
+        assert_eq!(tokenize("").unwrap(), vec![]);
     }
 
     #[test]
     fn whitespace() {
-        assert_eq!(tokenize("\t      ").unwrap(), vec![])
+        assert_eq!(tokenize("\t      ").unwrap(), vec![]);
     }
 
     #[test]
     fn slash_comment() {
-        assert_eq!(tokenize("   //COmments      ").unwrap(), vec![])
+        assert_eq!(tokenize("   //COmments      ").unwrap(), vec![]);
     }
 
     #[test]
     fn hashtag_comment() {
-        assert_eq!(tokenize("   # COmments      ").unwrap(), vec![])
+        assert_eq!(tokenize("   # COmments      ").unwrap(), vec![]);
     }
 
     #[test]
@@ -170,7 +170,7 @@ mod tests {
                 Token::Comma,
                 Token::Identifier("sp".to_string())
             ]
-        )
+        );
     }
 
     #[test]
@@ -178,7 +178,7 @@ mod tests {
         assert_eq!(
             tokenize("  hello     ").unwrap(),
             vec![Token::Identifier("hello".to_string())]
-        )
+        );
     }
 
     #[test]
@@ -186,7 +186,7 @@ mod tests {
         assert_eq!(
             tokenize("    123   ").unwrap(),
             vec![Token::Literal("123".to_string())]
-        )
+        );
     }
 
     #[test]
@@ -198,7 +198,7 @@ mod tests {
                 Token::Comma,
                 Token::Identifier("there".to_string()),
             ]
-        )
+        );
     }
 
     #[test]
@@ -212,6 +212,6 @@ mod tests {
                 Token::Identifier("there".to_string()),
                 Token::ClosingParenthesis,
             ]
-        )
+        );
     }
 }

@@ -184,7 +184,7 @@ fn generate_btype(funct3: u32, btype: BType) -> u32 {
     let funct3 = funct3 << 12;
     let first_source = (btype.first_source as u32) << 15;
     let second_source = (btype.second_source as u32) << 20;
-    let label_3 = ((btype.label.encode() >> 5) & 0b111111) << 25;
+    let label_3 = ((btype.label.encode() >> 5) & 0b11_1111) << 25;
     let label_4 = ((btype.label.encode() >> 12) & 0b1) << 31;
 
     label_4 | label_3 | second_source | first_source | funct3 | label_2 | label_1 | opcode

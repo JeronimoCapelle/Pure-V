@@ -1,4 +1,4 @@
-use assembler::compile_string;
+use pure_rv32i::compile_string;
 
 #[test]
 fn test_core_execution_loop() {

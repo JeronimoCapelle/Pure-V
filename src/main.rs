@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use assembler::compile_string;
+use pure_rv32i::compile_string;
 
 fn main() {
     let mut args = std::env::args().skip(1);

@@ -32,6 +32,7 @@ pub enum ParsingError {
 
 //-----------------------
 #[derive(PartialEq, Eq, Debug)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum Instruction {
     ADDI(IType),
     ADD(RType),
@@ -111,15 +112,12 @@ pub struct Immediate(i16); // 12-bit signed integer (range: -2048 to 2047). Limi
 
 impl Immediate {
     pub fn new(token: &Token) -> Result<Immediate, TrackedError> {
-        let value = match token {
-            Token::Literal(a) => a,
-            _ => {
-                return Err(TrackedError {
-                    kind: NonLiteral,
-                    line: line!(),
-                    file: file!(),
-                });
-            }
+        let Token::Literal(value) = token else {
+            return Err(TrackedError {
+                kind: NonLiteral,
+                line: line!(),
+                file: file!(),
+            });
         };
         let numeric: i16;
 
@@ -173,6 +171,7 @@ impl Immediate {
         }
         Ok(Immediate(numeric))
     }
+    #[allow(clippy::cast_sign_loss)]
     pub fn encode(&self) -> u32 {
         if self.0 >= 0 {
             self.0 as u32
@@ -186,15 +185,12 @@ pub struct Shamt(u8); //5-bit unsigned integer (range: 0 to 31 for 32-bit regist
 
 impl Shamt {
     pub fn new(token: &Token) -> Result<Shamt, TrackedError> {
-        let value = match token {
-            Token::Literal(a) => a,
-            _ => {
-                return Err(TrackedError {
-                    kind: NonLiteral,
-                    line: line!(),
-                    file: file!(),
-                });
-            }
+        let Token::Literal(value) = token else {
+            return Err(TrackedError {
+                kind: NonLiteral,
+                line: line!(),
+                file: file!(),
+            });
         };
 
         let numeric: u8;
@@ -244,7 +240,7 @@ impl Shamt {
         Ok(Shamt(numeric))
     }
     pub fn encode(&self) -> u32 {
-        self.0 as u32
+        u32::from(self.0)
     }
 }
 #[derive(PartialEq, Eq, Debug)]
@@ -252,15 +248,12 @@ pub struct Offset(i16); //12-bit signed immediate offset (range: -2048 to 2047 b
 
 impl Offset {
     pub fn new(token: &Token) -> Result<Offset, TrackedError> {
-        let value = match token {
-            Token::Literal(a) => a,
-            _ => {
-                return Err(TrackedError {
-                    kind: NonLiteral,
-                    line: line!(),
-                    file: file!(),
-                });
-            }
+        let Token::Literal(value) = token else {
+            return Err(TrackedError {
+                kind: NonLiteral,
+                line: line!(),
+                file: file!(),
+            });
         };
 
         let numeric: i16;
@@ -317,6 +310,7 @@ impl Offset {
         }
         Ok(Offset(numeric))
     }
+    #[allow(clippy::cast_sign_loss)]
     pub fn encode(&self) -> u32 {
         if self.0 >= 0 {
             self.0 as u32
@@ -334,15 +328,12 @@ impl Label {
         symbol_table: &HashMap<String, usize>,
         current_pc: usize,
     ) -> Result<Label, TrackedError> {
-        let value = match token {
-            Token::Identifier(a) => a,
-            _ => {
-                return Err(TrackedError {
-                    kind: NonIdentifier,
-                    line: line!(),
-                    file: file!(),
-                });
-            }
+        let Token::Identifier(value) = token else {
+            return Err(TrackedError {
+                kind: NonIdentifier,
+                line: line!(),
+                file: file!(),
+            });
         };
         if !symbol_table.contains_key(value) {
             return Err(TrackedError {
@@ -378,6 +369,7 @@ impl Label {
 
         Ok(Label(offset.try_into().unwrap()))
     }
+    #[allow(clippy::cast_sign_loss)]
     pub fn encode(&self) -> u32 {
         if self.0 >= 0 {
             self.0 as u32
@@ -395,15 +387,12 @@ impl BigLabel {
         symbol_table: &HashMap<String, usize>,
         current_pc: usize,
     ) -> Result<BigLabel, TrackedError> {
-        let value = match token {
-            Token::Identifier(a) => a,
-            _ => {
-                return Err(TrackedError {
-                    kind: NonIdentifier,
-                    line: line!(),
-                    file: file!(),
-                });
-            }
+        let Token::Identifier(value) = token else {
+            return Err(TrackedError {
+                kind: NonIdentifier,
+                line: line!(),
+                file: file!(),
+            });
         };
         if !symbol_table.contains_key(value) {
             return Err(TrackedError {
@@ -439,6 +428,7 @@ impl BigLabel {
 
         Ok(BigLabel(offset.try_into().unwrap()))
     }
+    #[allow(clippy::cast_sign_loss)]
     pub fn encode(&self) -> u32 {
         if self.0 >= 0 {
             self.0 as u32
@@ -486,120 +476,52 @@ pub enum Register {
 
 impl Register {
     pub fn new(token: &Token) -> Result<Register, TrackedError> {
-        let name = match token {
-            Token::Identifier(a) => a,
-            _ => {
-                return Err(TrackedError {
-                    kind: NonIdentifier,
-                    line: line!(),
-                    file: file!(),
-                });
-            }
+        let Token::Identifier(name) = token else {
+            return Err(TrackedError {
+                kind: NonIdentifier,
+                line: line!(),
+                file: file!(),
+            });
         };
-
         Ok(match name.as_str() {
-            "x0" => Register::X0,
-            "zero" => Register::X0,
+            "x0" | "zero" => Register::X0,
 
-            "x1" => Register::X1,
-            "ra" => Register::X1,
-
-            "x2" => Register::X2,
-            "sp" => Register::X2,
-
-            "x3" => Register::X3,
-            "gp" => Register::X3,
-
-            "x4" => Register::X4,
-            "tp" => Register::X4,
-
+            "x1" | "ra" => Register::X1,
+            "x2" | "sp" => Register::X2,
+            "x3" | "gp" => Register::X3,
+            "x4" | "tp" => Register::X4,
             //---
-            "x5" => Register::X5,
-            "t0" => Register::X5,
-
-            "x6" => Register::X6,
-            "t1" => Register::X6,
-
-            "x7" => Register::X7,
-            "t2" => Register::X7,
-
+            "x5" | "t0" => Register::X5,
+            "x6" | "t1" => Register::X6,
+            "x7" | "t2" => Register::X7,
             //---
-            "x8" => Register::X8,
-            "fp" => Register::X8,
-            "s0" => Register::X8,
-
-            "x9" => Register::X9,
-            "s1" => Register::X9,
-
-            "x10" => Register::X10,
-            "a0" => Register::X10,
-
+            "x8" | "fp" | "s0" => Register::X8,
+            "x9" | "s1" => Register::X9,
+            "x10" | "a0" => Register::X10,
             //---
-            "x11" => Register::X11,
-            "a1" => Register::X11,
-
-            "x12" => Register::X12,
-            "a2" => Register::X12,
-
-            "x13" => Register::X13,
-            "a3" => Register::X13,
-
-            "x14" => Register::X14,
-            "a4" => Register::X14,
-
-            "x15" => Register::X15,
-            "a5" => Register::X15,
-
-            "x16" => Register::X16,
-            "a6" => Register::X16,
-
-            "x17" => Register::X17,
-            "a7" => Register::X17,
-
+            "x11" | "a1" => Register::X11,
+            "x12" | "a2" => Register::X12,
+            "x13" | "a3" => Register::X13,
+            "x14" | "a4" => Register::X14,
+            "x15" | "a5" => Register::X15,
+            "x16" | "a6" => Register::X16,
+            "x17" | "a7" => Register::X17,
             //---
-            "x18" => Register::X18,
-            "s2" => Register::X18,
-
-            "x19" => Register::X19,
-            "s3" => Register::X19,
-
-            "x20" => Register::X20,
-            "s4" => Register::X20,
-
-            "x21" => Register::X21,
-            "s5" => Register::X21,
-
-            "x22" => Register::X22,
-            "s6" => Register::X22,
-
-            "x23" => Register::X23,
-            "s7" => Register::X23,
-
-            "x24" => Register::X24,
-            "s8" => Register::X24,
-
-            "x25" => Register::X25,
-            "s9" => Register::X25,
-
-            "x26" => Register::X26,
-            "s10" => Register::X26,
-
-            "x27" => Register::X27,
-            "s11" => Register::X27,
-
+            "x18" | "s2" => Register::X18,
+            "x19" | "s3" => Register::X19,
+            "x20" | "s4" => Register::X20,
+            "x21" | "s5" => Register::X21,
+            "x22" | "s6" => Register::X22,
+            "x23" | "s7" => Register::X23,
+            "x24" | "s8" => Register::X24,
+            "x25" | "s9" => Register::X25,
+            "x26" | "s10" => Register::X26,
+            "x27" | "s11" => Register::X27,
             //---
-            "x28" => Register::X28,
-            "t3" => Register::X28,
-
-            "x29" => Register::X29,
-            "t4" => Register::X29,
-
-            "x30" => Register::X30,
-            "t5" => Register::X30,
-
-            "x31" => Register::X31,
-            "t6" => Register::X31,
-
+            "x28" | "t3" => Register::X28,
+            "x29" | "t4" => Register::X29,
+            "x30" | "t5" => Register::X30,
+            "x31" | "t6" => Register::X31,
             _ => {
                 return Err(TrackedError {
                     kind: NonExistentRegister,

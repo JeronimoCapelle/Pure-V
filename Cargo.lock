@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "assembler"
+name = "pure-rv32i"
 version = "0.1.0"

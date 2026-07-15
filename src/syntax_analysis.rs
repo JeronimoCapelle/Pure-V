@@ -1,6 +1,11 @@
 use std::collections::HashMap;
 
-use crate::structures::{ParsingError::*, *};
+use crate::structures::{
+    BType, BigLabel, IType, ITypeJump, ITypeMemory, ITypeShifts, Immediate, Instruction, JType,
+    Label, Offset,
+    ParsingError::{NonExistentMnemonic, NonIdentifier, WrongArgument},
+    RType, Register, STypeMemory, Shamt, Token, TrackedError,
+};
 
 pub fn parse(
     tokens: &[Token],
@@ -22,15 +27,12 @@ fn parse_statement(
     symbol_table: &HashMap<String, usize>,
     pc_counter: usize,
 ) -> std::result::Result<Instruction, TrackedError> {
-    let mnemonic = match &tokens[0] {
-        Token::Identifier(a) => a,
-        _ => {
-            return Err(TrackedError {
-                kind: NonIdentifier,
-                line: line!(),
-                file: file!(),
-            });
-        }
+    let Token::Identifier(mnemonic) = &tokens[0] else {
+        return Err(TrackedError {
+            kind: NonIdentifier,
+            line: line!(),
+            file: file!(),
+        });
     };
 
     let operands = &tokens[1..];

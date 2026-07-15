@@ -10,20 +10,15 @@ pub fn collect_symbols(
 
     for line in tokens.split(|t| *t == Token::NewLine) {
         if line.ends_with(&[Token::Colon]) && line.len() == 2 {
-            let name = match &line[0] {
-                Token::Identifier(a) => a,
-                _ => {
-                    return Err(TrackedError {
-                        kind: NonIdentifier,
-                        line: line!(),
-                        file: file!(),
-                    });
-                }
+            let Token::Identifier(name) = &line[0] else {
+                return Err(TrackedError {
+                    kind: NonIdentifier,
+                    line: line!(),
+                    file: file!(),
+                });
             };
-            symbol_table.insert(name.to_string(), pc_counter);
-        } else if line.is_empty() {
-            continue;
-        } else {
+            symbol_table.insert(name.clone(), pc_counter);
+        } else if !line.is_empty() {
             pc_counter += 4;
             symbol_free_tokens.append(&mut line.to_vec());
             symbol_free_tokens.push(Token::NewLine);
