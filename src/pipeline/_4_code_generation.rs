@@ -1,4 +1,6 @@
-use crate::auxiliar::instruction::*;
+use crate::auxiliar::instruction::{
+    BType, IType, ITypeJump, ITypeMemory, ITypeShifts, Instruction, JType, RType, STypeMemory,
+};
 
 pub fn assemble(instructions: Vec<Instruction>) -> Vec<u32> {
     let mut buffer: Vec<u32> = Vec::new();
@@ -122,7 +124,7 @@ fn encode_instruction(instruction: Instruction) -> u32 {
     }
 }
 
-fn generate_rtype(funct3: u32, funct7: u32, rtype: RType) -> u32 {
+const fn generate_rtype(funct3: u32, funct7: u32, rtype: RType) -> u32 {
     let opcode = 51;
     let destination = (rtype.destination as u32) << 7;
     let funct3 = funct3 << 12;
@@ -133,7 +135,7 @@ fn generate_rtype(funct3: u32, funct7: u32, rtype: RType) -> u32 {
     funct7 | second_source | first_source | funct3 | destination | opcode
 }
 
-fn generate_itype(funct3: u32, itype: IType) -> u32 {
+const fn generate_itype(funct3: u32, itype: IType) -> u32 {
     let opcode = 19;
     let destination = (itype.destination as u32) << 7;
     let funct3 = funct3 << 12;
@@ -154,7 +156,7 @@ fn generate_itype_shifts(funct3: u32, funct7: u32, itype_shifts: ITypeShifts) ->
     funct7 | shamt | source | funct3 | destination | opcode
 }
 
-fn generate_stype_memory(funct3: u32, stype_memory: STypeMemory) -> u32 {
+const fn generate_stype_memory(funct3: u32, stype_memory: STypeMemory) -> u32 {
     let opcode = 35;
     let offset_1 = (stype_memory.offset.encode() & 0b11111) << 7;
     let funct3 = funct3 << 12;
@@ -165,7 +167,7 @@ fn generate_stype_memory(funct3: u32, stype_memory: STypeMemory) -> u32 {
     offset_2 | base_address | source | funct3 | offset_1 | opcode
 }
 
-fn generate_itype_memory(funct3: u32, itype_memory: ITypeMemory) -> u32 {
+const fn generate_itype_memory(funct3: u32, itype_memory: ITypeMemory) -> u32 {
     let opcode = 3;
     let destination = (itype_memory.destination as u32) << 7;
     let funct3 = funct3 << 12;
@@ -175,7 +177,7 @@ fn generate_itype_memory(funct3: u32, itype_memory: ITypeMemory) -> u32 {
     offset | base_address | funct3 | destination | opcode
 }
 
-fn generate_btype(funct3: u32, btype: BType) -> u32 {
+const fn generate_btype(funct3: u32, btype: BType) -> u32 {
     let opcode = 99;
     let label_1 = ((btype.label.encode() >> 11) & 0b1) << 7;
     let label_2 = ((btype.label.encode() >> 1) & 0b1111) << 8;
@@ -188,7 +190,7 @@ fn generate_btype(funct3: u32, btype: BType) -> u32 {
     label_4 | label_3 | second_source | first_source | funct3 | label_2 | label_1 | opcode
 }
 
-fn generate_jtype(jtype: JType) -> u32 {
+const fn generate_jtype(jtype: JType) -> u32 {
     let opcode = 111;
     let destination = (jtype.destination as u32) << 7;
     let label_1 = ((jtype.big_label.encode() >> 12) & 0b1111_1111) << 12;
@@ -199,7 +201,7 @@ fn generate_jtype(jtype: JType) -> u32 {
     label_4 | label_3 | label_2 | label_1 | destination | opcode
 }
 
-fn generate_itype_jump(funct3: u32, itypejump: ITypeJump) -> u32 {
+const fn generate_itype_jump(funct3: u32, itypejump: ITypeJump) -> u32 {
     let opcode = 103;
     let destination = (itypejump.destination as u32) << 7;
     let funct3 = funct3 << 12;

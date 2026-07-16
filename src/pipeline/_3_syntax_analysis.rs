@@ -6,8 +6,11 @@ use crate::auxiliar::{
         Stage::Syntax,
         SyntaxError::{self, Empty, Impossible, WrongArguments},
     },
-    instruction::*,
-    token::Token::{self},
+    instruction::{
+        BType, IType, ITypeJump, ITypeMemory, ITypeShifts, Instruction, JType, RType, STypeMemory,
+    },
+    operands::{BigLabel, Immediate, Label, Offset, Register, Shamt},
+    token::Token,
 };
 
 pub fn parse(
@@ -25,9 +28,8 @@ pub fn parse(
             return Err(AssemblerError::internal(Syntax(Empty)));
         }
 
-        let newline = match newline[0] {
-            Token::NewLine(a) => a,
-            _ => return Err(AssemblerError::internal(Syntax(Impossible))),
+        let Token::NewLine(newline) = newline[0] else {
+            return Err(AssemblerError::internal(Syntax(Impossible)));
         };
 
         let pc_counter = index * 4;

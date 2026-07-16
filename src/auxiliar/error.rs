@@ -14,7 +14,7 @@ pub struct AssemblerError {
 
 impl AssemblerError {
     #[track_caller]
-    pub fn new(assembly_stage: Stage, offending_input_line_number: usize) -> Self {
+    pub const fn new(assembly_stage: Stage, offending_input_line_number: usize) -> Self {
         Self {
             rust_location: Location::caller(),
             assembly_stage,
@@ -22,7 +22,7 @@ impl AssemblerError {
             who: Responsable::User,
         }
     }
-    pub fn internal(assembly_stage: Stage) -> Self {
+    pub const fn internal(assembly_stage: Stage) -> Self {
         Self {
             rust_location: Location::caller(),
             assembly_stage,
@@ -48,8 +48,8 @@ pub enum Stage {
 
 #[derive(Debug)]
 pub enum SyntaxError {
-    BiggerValue(i32, i32),  //expected, recieved
-    SmallerValue(i32, i32), //expected, recieved
+    BiggerValue(i128, i128),  //expected, recieved
+    SmallerValue(i128, i128), //expected, recieved
     OddValue(Token),
     TexttoNumeric(Token),
     NonExistentRegister(Token),
