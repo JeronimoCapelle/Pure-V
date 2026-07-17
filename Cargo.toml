@@ -48,8 +48,8 @@ print_stderr = "forbid"
 dbg_macro = "forbid"          
 
 
-# missing_docs_in_private_items = "forbid" 
-# missing_inline_in_public_items = "forbid"
+missing_docs_in_private_items = "forbid" 
+missing_inline_in_public_items = "forbid"
 unseparated_literal_suffix = "forbid"  
 
 all =  "forbid"

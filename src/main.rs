@@ -1,8 +1,7 @@
 //! Primitive CLI version of the Pure-RV32I Assembler
 
-use std::io::Write;
-
 use pure_rv32i::assemble_string;
+use std::io::Write;
 
 fn main() {
     let mut args = std::env::args();
@@ -33,9 +32,16 @@ fn main() {
         }
     };
 
-    println!("Assembly succesful");
+    println!("Assembly successful");
 
-    let mut file = match std::fs::File::create("output.bin") {
+    let output_filename = match input_filename.rsplit_once('.') {
+        Some(a) => a.0,
+        None => &input_filename,
+    };
+
+    let output_file = format!("{output_filename}.bin");
+
+    let mut file = match std::fs::File::create(output_filename) {
         Ok(a) => a,
         Err(a) => {
             println!("{a}");
@@ -47,6 +53,6 @@ fn main() {
         println!("{a}");
     }
 
-    println!("Binary succesfully written to output.bin");
+    println!("Binary successfully written to output.bin");
     println!("Exiting...");
 }

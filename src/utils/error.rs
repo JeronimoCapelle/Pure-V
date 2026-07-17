@@ -7,18 +7,18 @@ use crate::utils::error::Stage::Internal;
 use crate::utils::token::Token;
 
 // ----
-/// Error type used throught the assembler for idiomatic error handling and custom error feedback
+/// Error type used throughout the assembler for idiomatic error handling and custom error feedback
 #[derive(Debug)]
 pub struct AssemblerError {
     /// File and line number of the assembler source code where the error was created
     rust_location: &'static Location<'static>,
-    /// The pipeline stage where the error occured
+    /// The pipeline stage where the error occurred
     assembly_stage: Stage,
-    /// The assembly source code line where the error occured
+    /// The assembly source code line where the error occurred
     input_line_number: usize,
     /// The string containing the offending line, for display purposes
     input_line: String,
-    /// Wether the error is caused by the user, or by the internal assembler design
+    /// Whether the error is caused by the user, or by the internal assembler design
     who: Responsible,
 }
 
@@ -61,6 +61,7 @@ impl AssemblerError {
 }
 
 impl fmt::Display for AssemblerError {
+    #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
             f,
@@ -88,7 +89,7 @@ impl fmt::Display for AssemblerError {
 /// Enum for detailing who is at fault for the generated error
 #[derive(Debug)]
 pub enum Responsible {
-    /// The error is the assemblers fault, unrecoverable error, these shouldnt occur
+    /// The error is the assemblers fault, unrecoverable error, these shouldn't occur
     Internal,
     /// The error is the users fault, usually typos or syntax errors
     User,
@@ -96,13 +97,13 @@ pub enum Responsible {
 
 /// At what stage of the pipeline did the error occur, note that stages that are not present are impossible to fail
 pub enum Stage {
-    /// Error occured at the tokenizer stage.
+    /// Error occurred at the tokenizer stage.
     Tokenizer,
-    /// Error ocurred at the symbol table and token cleaning stage
+    /// Error occurred at the symbol table and token cleaning stage
     SymbolCollection,
-    /// Error ocurred at the instruction parsing stage.
+    /// Error occurred at the instruction parsing stage.
     Syntax(SyntaxError),
-    /// Error ocrred during operations which were impossible to happen
+    /// Error occurred during operations which were impossible to happen
     Internal,
 }
 
@@ -117,18 +118,18 @@ impl Debug for Stage {
     }
 }
 
-/// Error subtype for providing useful information during the syntax stage.
+/// Error sub-type for providing useful information during the syntax stage.
 pub enum SyntaxError {
-    /// The value provided is bigger than the maximum expected. (Expected, Recieved)
-    BiggerValue(i128, i128), //expected, recieved
+    /// The value provided is bigger than the maximum expected. (Expected, Received)
+    BiggerValue(i128, i128), //expected, received
 
-    /// The value provided is smaller than the minimum expected. (Expected, Recieved)
-    SmallerValue(i128, i128), //expected, recieved
+    /// The value provided is smaller than the minimum expected. (Expected, Received)
+    SmallerValue(i128, i128), //expected, received
 
     /// The value provided is odd, which is not allowed in offsets.
     OddValue(i128),
 
-    /// The value couldnt be converted into a numeric
+    /// The value couldn't be converted into a numeric
     TexttoNumeric(String),
 
     /// The register provided is not a known register name or alias
@@ -137,16 +138,16 @@ pub enum SyntaxError {
     /// The Mnemonic provided is not known or implemented
     NonExistentMnemonic(String),
 
-    /// Arguments provided werent correct with what the instruction indicated. (Make this more verbose)
+    /// Arguments provided weren't correct with what the instruction indicated. (Make this more verbose)
     WrongArguments,
 
     /// The token type provided is not what was expected. (Literal when looking for a register name, or an Identifier when computing an offset)
     InvalidToken(Token),
 
-    /// The label couldnt be found in the symbols table. Usually a typo.
+    /// The label couldn't be found in the symbols table. Usually a typo.
     Translation(String),
 
-    /// Reserved variant for internal Assembler Errors, This ones shouldnt occur during the assemblers use.
+    /// Reserved variant for internal Assembler Errors, This ones shouldn't occur during the assemblers use.
     Internal,
 }
 
@@ -171,7 +172,7 @@ impl Debug for SyntaxError {
             }
             Self::NonExistentMnemonic(string) => write!(
                 f,
-                " Could not identify {{{string}}} mnemonic, it might be mispelled or not yet implemented "
+                " Could not identify {{{string}}} mnemonic, it might be misspelled or not yet implemented "
             ),
             Self::Translation(string) => {
                 write!(f, " Couldnt find reference to label {{{string}}} ")

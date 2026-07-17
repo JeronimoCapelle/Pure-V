@@ -142,9 +142,9 @@ fn generate_stype_memory(operands: &[Token]) -> Result<STypeMemory, SyntaxError>
     }
 
     Ok(STypeMemory {
-        rd: Register::new(&operands[0])?,
+        rs1: Register::new(&operands[0])?,
         offset: Offset::new(&operands[2])?,
-        rs1: Register::new(&operands[4])?,
+        rbase: Register::new(&operands[4])?,
     })
 }
 
@@ -257,7 +257,7 @@ mod tests {
         ];
         let output = parse(tokens.as_slice(), &HashMap::new())?;
 
-        let exepected = vec![
+        let expected = vec![
             Instruction::Add(RType {
                 rd: Register::X1,
                 rs1: Register::X2,
@@ -270,7 +270,7 @@ mod tests {
             }),
         ];
 
-        assert_eq!(output, exepected);
+        assert_eq!(output, expected);
 
         Ok(())
     }

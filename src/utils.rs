@@ -1,4 +1,4 @@
-//! module containing tools for use throught the assembler
+//! module containing tools for use throughout the assembler
 
 pub mod error;
 pub mod instruction;

@@ -1,7 +1,7 @@
 //! Module containing functions for parsing strings to numerics
 use core::num::ParseIntError;
 
-/// Utility function for parsing string to numeric from different bases, decimal, octal, hexa, and binary
+/// Utility function for parsing string to numeric from different bases, decimal, octal, hex, and binary
 pub fn interpret_literal(value: &str) -> Result<i128, ParseIntError> {
     let _ = match value.strip_prefix("0b") {
         Some(a) => {

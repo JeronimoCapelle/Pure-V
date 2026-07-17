@@ -6,7 +6,7 @@ pub enum Token {
     /// String representation of Literal numeric value, can be in decimal, hexadecimal, octal, binary, and includes negative symbol
     Literal(String),
 
-    /// String representation of a word, could be a nmenonic, a label, a register, etc...
+    /// String representation of a word, could be a mnemonic, a label, a register, etc...
     Identifier(String),
 
     /// Token for a comma punctuation mark

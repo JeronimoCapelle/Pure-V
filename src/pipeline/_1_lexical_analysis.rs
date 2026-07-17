@@ -1,4 +1,4 @@
-//! First step in the assmebly pipeline, turning the program string into tokens
+//! First step in the assembly pipeline, turning the program string into tokens
 use crate::utils::{
     error::{AssemblerError, Stage::Tokenizer},
     token::Token,
@@ -180,7 +180,7 @@ mod tests {
     }
 
     #[test]
-    fn instruction_label_intstuction() -> Result<(), AssemblerError> {
+    fn instruction_label_instruction() -> Result<(), AssemblerError> {
         let output = tokenize("add x1,    x2 ,x3\nlabel:\nxori x23,    sp ,300")?;
         let expected = vec![
             Token::Identifier("add".to_string()),

@@ -53,9 +53,9 @@ pub struct ITypeMemory {
 }
 #[derive(PartialEq, Eq, Debug)]
 pub struct STypeMemory {
-    pub rd: Register,
-    pub offset: Offset,
     pub rs1: Register,
+    pub offset: Offset,
+    pub rbase: Register,
 }
 #[derive(PartialEq, Eq, Debug)]
 pub struct BType {

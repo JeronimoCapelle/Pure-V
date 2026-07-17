@@ -231,6 +231,7 @@ impl JLabel {
 }
 //--------------------------------------------------
 #[derive(PartialEq, Eq, Debug)]
+#[repr(u32)]
 pub enum Register {
     X0,
     X1,
@@ -267,6 +268,7 @@ pub enum Register {
 }
 
 impl Register {
+    /// Creates a new integer enum from the given Indentifier Token, accepts aliases.
     pub(crate) fn new(token: &Token) -> Result<Self, SyntaxError> {
         let Token::Identifier(name) = token else {
             return Err(InvalidToken(token.clone()));
@@ -314,5 +316,42 @@ impl Register {
                 return Err(NonExistentRegister(name.to_owned()));
             }
         })
+    }
+    /// Returns the u32 representation of the Register
+    pub(crate) const fn encode(self) -> u32 {
+        match self {
+            Self::X0 => 0,
+            Self::X1 => 1,
+            Self::X2 => 2,
+            Self::X3 => 3,
+            Self::X4 => 4,
+            Self::X5 => 5,
+            Self::X6 => 6,
+            Self::X7 => 7,
+            Self::X8 => 8,
+            Self::X9 => 9,
+            Self::X10 => 10,
+            Self::X11 => 11,
+            Self::X12 => 12,
+            Self::X13 => 13,
+            Self::X14 => 14,
+            Self::X15 => 15,
+            Self::X16 => 16,
+            Self::X17 => 17,
+            Self::X18 => 18,
+            Self::X19 => 19,
+            Self::X20 => 20,
+            Self::X21 => 21,
+            Self::X22 => 22,
+            Self::X23 => 23,
+            Self::X24 => 24,
+            Self::X25 => 25,
+            Self::X26 => 26,
+            Self::X27 => 27,
+            Self::X28 => 28,
+            Self::X29 => 29,
+            Self::X30 => 30,
+            Self::X31 => 31,
+        }
     }
 }
