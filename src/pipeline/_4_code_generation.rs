@@ -1,7 +1,49 @@
 //! Fourth step of the pipeline, encoding the instruction types into their binary forms
-use crate::utils::instruction::{
-    BType, IType, ITypeJump, ITypeMemory, ITypeShifts, Instruction, JType, RType, STypeMemory,
-};
+
+// funct3
+pub const ADDI_FUNCT3: u32 = 0b000;
+pub const ADD_FUNCT3: u32 = 0b000;
+pub const SUB_FUNCT3: u32 = 0b000;
+pub const BEQ_FUNCT3: u32 = 0b000;
+pub const BNE_FUNCT3: u32 = 0b001;
+pub const BLT_FUNCT3: u32 = 0b100;
+pub const BGE_FUNCT3: u32 = 0b101;
+pub const JALR_FUNCT3: u32 = 0b000;
+pub const XORI_FUNCT3: u32 = 0b100;
+pub const XOR_FUNCT3: u32 = 0b100;
+pub const ORI_FUNCT3: u32 = 0b110;
+pub const OR_FUNCT3: u32 = 0b110;
+pub const ANDI_FUNCT3: u32 = 0b111;
+pub const AND_FUNCT3: u32 = 0b111;
+pub const LB_FUNCT3: u32 = 0b000;
+pub const SB_FUNCT3: u32 = 0b000;
+pub const SW_FUNCT3: u32 = 0b010;
+pub const LW_FUNCT3: u32 = 0b010;
+pub const SLLI_FUNCT3: u32 = 0b001;
+pub const SRLI_FUNCT3: u32 = 0b101;
+
+// funct7
+pub const ADDI_FUNCT7: u32 = 0b000_0000;
+pub const ADD_FUNCT7: u32 = 0b000_0000;
+pub const SUB_FUNCT7: u32 = 0b100_000;
+pub const OR_FUNCT7: u32 = 0b000_000;
+pub const XOR_FUNCT7: u32 = 0b000_000;
+pub const AND_FUNCT7: u32 = 0b000_000;
+pub const SLLI_FUNCT7: u32 = 0b000_000;
+pub const SRLI_FUNCT7: u32 = 0b000_000;
+
+// opcode
+pub const RTYPE_OPCODE: u32 = 51;
+pub const BTYPE_OPCODE: u32 = 99;
+pub const JTYPE_OPCODE: u32 = 111;
+pub const ITYPE_OPCODE: u32 = 19;
+pub const ITYPE_SHIFTS_OPCODE: u32 = 19;
+pub const ITYPE_MEMORY_OPCODE: u32 = 3;
+pub const ITYPE_JUMP_OPCODE: u32 = 103;
+pub const STYPE_MEMORY_OPCODE: u32 = 35;
+pub const LUI_OPCODE: u32 = 0b011_0111;
+
+use crate::utils::instruction::Instruction;
 
 /// Encodes the provided ``instructions`` vector into their binary encoded form according to RV32I
 pub(super) fn assemble(instructions: Vec<Instruction>) -> Vec<u32> {
@@ -17,199 +59,249 @@ pub(super) fn assemble(instructions: Vec<Instruction>) -> Vec<u32> {
 /// Encode individual ``instruction`` into its 4 byte form
 fn encode_instruction(instruction: Instruction) -> u32 {
     match instruction {
-        Instruction::Addi(itype) => {
-            let funct3 = 0;
-            generate_itype(funct3, itype)
+        Instruction::Add(rtype) => encode_rtype(
+            RTYPE_OPCODE,
+            rtype.rd.encode(),
+            ADD_FUNCT3,
+            rtype.rs1.encode(),
+            rtype.rs2.encode(),
+            ADD_FUNCT7,
+        ),
+
+        Instruction::Sub(rtype) => encode_rtype(
+            RTYPE_OPCODE,
+            rtype.rd.encode(),
+            SUB_FUNCT3,
+            rtype.rs1.encode(),
+            rtype.rs2.encode(),
+            SUB_FUNCT7,
+        ),
+
+        Instruction::And(rtype) => encode_rtype(
+            RTYPE_OPCODE,
+            rtype.rd.encode(),
+            AND_FUNCT3,
+            rtype.rs1.encode(),
+            rtype.rs2.encode(),
+            AND_FUNCT7,
+        ),
+
+        Instruction::Or(rtype) => encode_rtype(
+            RTYPE_OPCODE,
+            rtype.rd.encode(),
+            OR_FUNCT3,
+            rtype.rs1.encode(),
+            rtype.rs2.encode(),
+            OR_FUNCT7,
+        ),
+
+        Instruction::Xor(rtype) => encode_rtype(
+            RTYPE_OPCODE,
+            rtype.rd.encode(),
+            XOR_FUNCT3,
+            rtype.rs1.encode(),
+            rtype.rs2.encode(),
+            XOR_FUNCT7,
+        ),
+
+        // ---
+        Instruction::Bne(btype) => encode_btype(
+            BTYPE_OPCODE,
+            btype.blabel.encode(),
+            BNE_FUNCT3,
+            btype.rs1.encode(),
+            btype.rs2.encode(),
+        ),
+
+        Instruction::Beq(btype) => encode_btype(
+            BTYPE_OPCODE,
+            btype.blabel.encode(),
+            BEQ_FUNCT3,
+            btype.rs1.encode(),
+            btype.rs2.encode(),
+        ),
+
+        Instruction::Blt(btype) => encode_btype(
+            BTYPE_OPCODE,
+            btype.blabel.encode(),
+            BLT_FUNCT3,
+            btype.rs1.encode(),
+            btype.rs2.encode(),
+        ),
+
+        Instruction::Bge(btype) => encode_btype(
+            BTYPE_OPCODE,
+            btype.blabel.encode(),
+            BGE_FUNCT3,
+            btype.rs1.encode(),
+            btype.rs2.encode(),
+        ),
+
+        // ---
+        Instruction::Jal(jtype) => {
+            encode_jtype(JTYPE_OPCODE, jtype.rd.encode(), jtype.jlabel.encode())
         }
 
-        Instruction::Add(rtype) => {
-            let funct3 = 0;
-            let funct7 = 0;
-            generate_rtype(funct3, funct7, rtype)
-        }
+        // ---
+        Instruction::Jalr(itype_jump) => encode_itype(
+            ITYPE_JUMP_OPCODE,
+            itype_jump.rd.encode(),
+            JALR_FUNCT3,
+            itype_jump.rs1.encode(),
+            itype_jump.offset.encode(),
+        ),
 
-        Instruction::Sub(rtype) => {
-            let funct3 = 0;
-            let funct7 = 32;
-            generate_rtype(funct3, funct7, rtype)
-        }
+        // ---
+        Instruction::Lw(itype_memory) => encode_itype(
+            ITYPE_MEMORY_OPCODE,
+            itype_memory.rd.encode(),
+            LW_FUNCT3,
+            itype_memory.rs1.encode(),
+            itype_memory.offset.encode(),
+        ),
 
-        Instruction::Bne(btype) => {
-            let funct3 = 1;
-            generate_btype(funct3, btype)
-        }
+        Instruction::Lb(itype_memory) => encode_itype(
+            ITYPE_MEMORY_OPCODE,
+            itype_memory.rd.encode(),
+            LB_FUNCT3,
+            itype_memory.rs1.encode(),
+            itype_memory.offset.encode(),
+        ),
 
-        Instruction::Beq(btype) => {
-            let funct3 = 0;
-            generate_btype(funct3, btype)
-        }
+        // ---
+        Instruction::Sw(stype_memory) => encode_stype(
+            STYPE_MEMORY_OPCODE,
+            stype_memory.offset.encode(),
+            SW_FUNCT3,
+            stype_memory.rbase.encode(),
+            stype_memory.rs.encode(),
+        ),
 
-        Instruction::Blt(btype) => {
-            let funct3 = 4;
-            generate_btype(funct3, btype)
-        }
+        Instruction::Sb(stype_memory) => encode_stype(
+            STYPE_MEMORY_OPCODE,
+            stype_memory.offset.encode(),
+            SB_FUNCT3,
+            stype_memory.rbase.encode(),
+            stype_memory.rs.encode(),
+        ),
 
-        Instruction::Bge(btype) => {
-            let funct3 = 5;
-            generate_btype(funct3, btype)
-        }
+        // ---
+        Instruction::Slli(itype_shifts) => encode_itype(
+            ITYPE_SHIFTS_OPCODE,
+            itype_shifts.rd.encode(),
+            SLLI_FUNCT3,
+            itype_shifts.rs1.encode(),
+            itype_shifts.shamt.encode() | SLLI_FUNCT7 << 5,
+        ),
 
-        Instruction::Jal(jtype) => generate_jtype(jtype),
-        Instruction::Jalr(itype_jump) => {
-            let funct3 = 0;
-            generate_itype_jump(funct3, itype_jump)
-        }
+        Instruction::Srli(itype_shifts) => encode_itype(
+            ITYPE_SHIFTS_OPCODE,
+            itype_shifts.rd.encode(),
+            SRLI_FUNCT3,
+            itype_shifts.rs1.encode(),
+            itype_shifts.shamt.encode() | SRLI_FUNCT7 << 5,
+        ),
 
-        Instruction::Lw(itype_memory) => {
-            let funct3 = 2;
-            generate_itype_memory(funct3, itype_memory)
-        }
+        // ---
+        Instruction::Addi(itype) => encode_itype(
+            ITYPE_OPCODE,
+            itype.rd.encode(),
+            ADDI_FUNCT3,
+            itype.rs1.encode(),
+            itype.imm.encode(),
+        ),
 
-        Instruction::Sw(stype_memory) => {
-            let funct3 = 2;
-            generate_stype_memory(funct3, stype_memory)
-        }
+        Instruction::Andi(itype) => encode_itype(
+            ITYPE_OPCODE,
+            itype.rd.encode(),
+            ANDI_FUNCT3,
+            itype.rs1.encode(),
+            itype.imm.encode(),
+        ),
 
-        Instruction::Lb(itype_memory) => {
-            let funct3 = 0;
-            generate_itype_memory(funct3, itype_memory)
-        }
+        Instruction::Ori(itype) => encode_itype(
+            ITYPE_OPCODE,
+            itype.rd.encode(),
+            ORI_FUNCT3,
+            itype.rs1.encode(),
+            itype.imm.encode(),
+        ),
 
-        Instruction::Sb(stype_memory) => {
-            let funct3 = 0;
-            generate_stype_memory(funct3, stype_memory)
-        }
+        Instruction::Xori(itype) => encode_itype(
+            ITYPE_OPCODE,
+            itype.rd.encode(),
+            XORI_FUNCT3,
+            itype.rs1.encode(),
+            itype.imm.encode(),
+        ),
 
-        Instruction::Slli(itype_shifts) => {
-            let funct3 = 1;
-            let funct7 = 0;
-            generate_itype_shifts(funct3, funct7, itype_shifts)
-        }
-
-        Instruction::Srli(itype_shifts) => {
-            let funct3 = 5;
-            let funct7 = 0;
-            generate_itype_shifts(funct3, funct7, itype_shifts)
-        }
-
-        Instruction::And(rtype) => {
-            let funct3 = 7;
-            let funct7 = 0;
-            generate_rtype(funct3, funct7, rtype)
-        }
-
-        Instruction::Or(rtype) => {
-            let funct3 = 6;
-            let funct7 = 0;
-            generate_rtype(funct3, funct7, rtype)
-        }
-
-        Instruction::Xor(rtype) => {
-            let funct3 = 4;
-            let funct7 = 0;
-            generate_rtype(funct3, funct7, rtype)
-        }
-
-        Instruction::Andi(itype) => {
-            let funct3 = 7;
-            generate_itype(funct3, itype)
-        }
-
-        Instruction::Ori(itype) => {
-            let funct3 = 6;
-            generate_itype(funct3, itype)
-        }
-
-        Instruction::Xori(itype) => {
-            let funct3 = 4;
-            generate_itype(funct3, itype)
+        // ---
+        Instruction::Lui(utype) => {
+            encode_utype(LUI_OPCODE, utype.rd.encode(), utype.constant.encode())
         }
     }
 }
-
-const fn generate_rtype(funct3: u32, funct7: u32, rtype: RType) -> u32 {
-    let opcode = 51;
-    let destination = (rtype.rd.encode()) << 7;
+pub const fn encode_rtype(
+    opcode: u32,
+    rd: u32,
+    funct3: u32,
+    rs1: u32,
+    rs2: u32,
+    funct7: u32,
+) -> u32 {
+    let rd = rd << 7;
     let funct3 = funct3 << 12;
-    let first_source = (rtype.rs1.encode()) << 15;
-    let second_source = (rtype.rs2.encode()) << 20;
+    let rs1 = rs1 << 15;
+    let rs2 = rs2 << 20;
     let funct7 = funct7 << 25;
 
-    funct7 | second_source | first_source | funct3 | destination | opcode
+    funct7 | rs2 | rs1 | funct3 | rd | opcode
 }
 
-fn generate_itype(funct3: u32, itype: IType) -> u32 {
-    let opcode = 19;
-    let destination = (itype.rd.encode()) << 7;
+pub const fn encode_itype(opcode: u32, rd: u32, funct3: u32, rs1: u32, imm: u32) -> u32 {
+    let rd = rd << 7;
     let funct3 = funct3 << 12;
-    let source = (itype.rs1.encode()) << 15;
-    let immediate = itype.imm.encode() << 20;
+    let rs1 = rs1 << 15;
+    let imm = imm << 20;
 
-    immediate | source | funct3 | destination | opcode
+    imm | rs1 | funct3 | rd | opcode
 }
 
-fn generate_itype_shifts(funct3: u32, funct7: u32, itype_shifts: ITypeShifts) -> u32 {
-    let opcode = 19;
-    let destination = (itype_shifts.rd.encode()) << 7;
+pub const fn encode_stype(opcode: u32, imm: u32, funct3: u32, rs1: u32, rs2: u32) -> u32 {
+    let imm_1 = (imm & 0b11111) << 7;
     let funct3 = funct3 << 12;
-    let source = (itype_shifts.rs1.encode()) << 15;
-    let shamt = itype_shifts.shamt.encode() << 20;
-    let funct7 = funct7 << 25;
+    let rs1 = rs1 << 15;
+    let rs2 = rs2 << 20;
+    let imm_2 = ((imm >> 5) & 0b_1111111) << 25;
 
-    funct7 | shamt | source | funct3 | destination | opcode
+    imm_2 | rs2 | rs1 | funct3 | imm_1 | opcode
 }
 
-fn generate_stype_memory(funct3: u32, stype_memory: STypeMemory) -> u32 {
-    let opcode = 35;
-    let offset_1 = (stype_memory.offset.encode() & 0b11111) << 7;
+pub const fn encode_btype(opcode: u32, imm: u32, funct3: u32, rs1: u32, rs2: u32) -> u32 {
+    let imm_1 = ((imm >> 10) & 0b1) << 7;
+    let imm_2 = (imm & 0b1111) << 8;
     let funct3 = funct3 << 12;
-    let base_address = (stype_memory.rbase.encode()) << 15;
-    let source = (stype_memory.rs1.encode()) << 20;
-    let offset_2 = ((stype_memory.offset.encode() >> 5) & 0b_1111111) << 25;
+    let rs1 = rs1 << 15;
+    let rs2 = rs2 << 20;
+    let imm_3 = ((imm >> 4) & 0b11_1111) << 25;
+    let imm_4 = ((imm >> 11) & 0b1) << 31;
 
-    offset_2 | base_address | source | funct3 | offset_1 | opcode
+    imm_4 | imm_3 | rs2 | rs1 | funct3 | imm_2 | imm_1 | opcode
 }
 
-fn generate_itype_memory(funct3: u32, itype_memory: ITypeMemory) -> u32 {
-    let opcode = 3;
-    let destination = (itype_memory.rd.encode()) << 7;
-    let funct3 = funct3 << 12;
-    let base_address = (itype_memory.rs1.encode()) << 15;
-    let offset = itype_memory.offset.encode() << 20;
+pub const fn encode_jtype(opcode: u32, rd: u32, imm: u32) -> u32 {
+    let rd = rd << 7;
+    let label_1 = ((imm >> 11) & 0b1111_1111) << 12;
+    let label_2 = ((imm >> 10) & 0b1) << 20;
+    let label_3 = ((imm) & 0b11_1111_1111) << 21;
+    let label_4 = ((imm >> 19) & 0b1) << 31;
 
-    offset | base_address | funct3 | destination | opcode
+    label_4 | label_3 | label_2 | label_1 | rd | opcode
 }
 
-fn generate_btype(funct3: u32, btype: BType) -> u32 {
-    let opcode = 99;
-    let label_1 = ((btype.blabel.encode() >> 10) & 0b1) << 7;
-    let label_2 = ((btype.blabel.encode()) & 0b1111) << 8;
-    let funct3 = funct3 << 12;
-    let first_source = (btype.rs1.encode()) << 15;
-    let second_source = (btype.rs2.encode()) << 20;
-    let label_3 = ((btype.blabel.encode() >> 4) & 0b11_1111) << 25;
-    let label_4 = ((btype.blabel.encode() >> 11) & 0b1) << 31;
+pub const fn encode_utype(opcode: u32, rd: u32, imm: u32) -> u32 {
+    let rd = rd << 7;
+    let imm = imm << 12;
 
-    label_4 | label_3 | second_source | first_source | funct3 | label_2 | label_1 | opcode
-}
-
-const fn generate_jtype(jtype: JType) -> u32 {
-    let opcode = 111;
-    let destination = (jtype.rd.encode()) << 7;
-    let label_1 = ((jtype.jlabel.encode() >> 11) & 0b1111_1111) << 12;
-    let label_2 = ((jtype.jlabel.encode() >> 10) & 0b1) << 20;
-    let label_3 = ((jtype.jlabel.encode()) & 0b11_1111_1111) << 21;
-    let label_4 = ((jtype.jlabel.encode() >> 19) & 0b1) << 31;
-
-    label_4 | label_3 | label_2 | label_1 | destination | opcode
-}
-
-fn generate_itype_jump(funct3: u32, itypejump: ITypeJump) -> u32 {
-    let opcode = 103;
-    let destination = (itypejump.rd.encode()) << 7;
-    let funct3 = funct3 << 12;
-    let source = (itypejump.rs1.encode()) << 15;
-    let immediate = itypejump.offset.encode() << 20;
-
-    immediate | source | funct3 | destination | opcode
+    imm | rd | opcode
 }

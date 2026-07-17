@@ -43,7 +43,7 @@ impl Immediate {
     }
     /// Encodes the Immediate value into a 12-bit signed integer
     pub(crate) fn encode(&self) -> u32 {
-        (u32::from(self.0.cast_unsigned())) & 0b1111_1111_1111
+        (u32::from(self.0.cast_unsigned())) & 0xFFF
     }
 }
 
@@ -114,7 +114,7 @@ impl Offset {
     }
     /// Encodes the Offset value into a 12-bit signed integer
     pub(crate) fn encode(&self) -> u32 {
-        (u32::from(self.0.cast_unsigned())) & 0b1111_1111_1111
+        (u32::from(self.0.cast_unsigned())) & 0xFFF
     }
 }
 ///12-bit signed PC-relative offset, multiple of 2 bytes. Used by ``BType``
@@ -170,7 +170,7 @@ impl BLabel {
     }
     /// Encodes the ``BLabel`` value into a 12-bit signed integer, implicit 0 bit is truncated
     pub(crate) fn encode(&self) -> u32 {
-        (u32::from(self.0.cast_unsigned() >> 1)) & 0b1111_1111_1111
+        (u32::from(self.0.cast_unsigned() >> 1)) & 0xFFF
     }
 }
 ///20-bit signed PC-relative offset, multiple of 2 bytes. Used by ``JType``
@@ -226,7 +226,40 @@ impl JLabel {
     }
     /// Encodes the ``JLabel`` value into a 12-bit signed integer, implicit 0 bit is truncated
     pub(crate) const fn encode(&self) -> u32 {
-        (self.0.cast_unsigned() >> 1) & 0b1111_1111_1111_1111_1111
+        (self.0.cast_unsigned() >> 1) & 0xFFFFF
+    }
+}
+#[derive(PartialEq, Eq, Debug)]
+
+pub struct Constant(u32); //20-bit constant
+
+impl Constant {
+    pub(crate) fn new(token: &Token) -> Result<Self, SyntaxError> {
+        let max = 0xFFFFF;
+        let min = 0;
+
+        let Token::Literal(text) = token else {
+            return Err(InvalidToken(token.clone()));
+        };
+
+        let Ok(value) = interpret_literal(text) else {
+            return Err(TexttoNumeric(text.to_owned()));
+        };
+
+        if value > max {
+            return Err(BiggerValue(max, value));
+        }
+
+        if value < min {
+            return Err(SmallerValue(min, value));
+        }
+
+        let value = u32::try_from(value).map_err(|_| SyntaxError::Internal)?;
+
+        Ok(Self(value))
+    }
+    pub(crate) fn encode(&self) -> u32 {
+        self.0 & 0xFFFFF
     }
 }
 //--------------------------------------------------

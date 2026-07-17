@@ -3,7 +3,7 @@
 use core::fmt;
 use core::{error::Error, fmt::Debug, panic::Location};
 
-use crate::utils::error::Stage::Internal;
+use crate::utils::error::Stage::{Internal, Syntax};
 use crate::utils::token::Token;
 
 // ----
@@ -83,6 +83,13 @@ impl fmt::Display for AssemblerError {
             self.input_line,
             self.rust_location
         )
+    }
+}
+
+impl From<SyntaxError> for AssemblerError {
+    #[inline]
+    fn from(value: SyntaxError) -> Self {
+        Self::new_user(Syntax(value), 0)
     }
 }
 

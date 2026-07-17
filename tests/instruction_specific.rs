@@ -149,3 +149,9 @@ fn jalr() {
     assert_eq!(result_1, expected);
     assert_eq!(result_2, expected);
 }
+#[test]
+fn lui() {
+    let result = assemble_string("lui x10,100").unwrap();
+    let expected = vec![0x37, 0x45, 0x06, 0x00];
+    assert_eq!(result, expected);
+}

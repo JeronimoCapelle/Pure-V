@@ -9,8 +9,9 @@ use crate::utils::{
     },
     instruction::{
         BType, IType, ITypeJump, ITypeMemory, ITypeShifts, Instruction, JType, RType, STypeMemory,
+        UType,
     },
-    operands::{BLabel, Immediate, JLabel, Offset, Register, Shamt},
+    operands::{BLabel, Constant, Immediate, JLabel, Offset, Register, Shamt},
     token::Token,
 };
 
@@ -93,6 +94,7 @@ fn parse_instruction(
 
         "jalr" => Instruction::Jalr(generate_itype_jump(operands)?),
 
+        "lui" => Instruction::Lui(generate_utype(operands)?),
         _ => {
             return Err(SyntaxError::NonExistentMnemonic(mnemonic.to_owned()));
         }
@@ -142,7 +144,7 @@ fn generate_stype_memory(operands: &[Token]) -> Result<STypeMemory, SyntaxError>
     }
 
     Ok(STypeMemory {
-        rs1: Register::new(&operands[0])?,
+        rs: Register::new(&operands[0])?,
         offset: Offset::new(&operands[2])?,
         rbase: Register::new(&operands[4])?,
     })
@@ -223,6 +225,17 @@ fn generate_rtype(operands: &[Token]) -> Result<RType, SyntaxError> {
     })
 }
 
+fn generate_utype(operands: &[Token]) -> Result<UType, SyntaxError> {
+    if operands.len() != 3 || !operands[1].eq(&Token::Comma) {
+        return Err(WrongArguments);
+    }
+
+    Ok(UType {
+        rd: Register::new(&operands[0])?,
+        constant: Constant::new(&operands[2])?,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
@@ -266,7 +279,7 @@ mod tests {
             Instruction::Xori(IType {
                 rd: Register::X23,
                 rs1: Register::X2,
-                imm: Immediate::new(&Token::Literal("300".to_string())).unwrap(),
+                imm: Immediate::new(&Token::Literal("300".to_owned()))?,
             }),
         ];
 
