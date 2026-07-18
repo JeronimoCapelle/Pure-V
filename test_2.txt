@@ -1,0 +1,65 @@
+# ==========================================
+# RV32I ARCHITECTURAL STRESS TEST
+# ==========================================
+
+_start:
+    lui     x1,      0x12345        # U-Type: Max 20-bit hex literal
+auipc  x2 ,0b10101010101010101010 # U-Type: 20-bit binary literal
+
+    // J-Type & I-Type Jump
+jal     ra,   _skip_ahead
+_return_here  :
+    jalr    x0 , -2048( ra)         // Negative offset with weird spacing
+
+_skip_ahead:
+    # B-Type: Branches with mixed aliases and x-registers
+    beq x1,x2, _start
+    bne    t0, t1,    _forward
+blt a0, a1, _start
+   bge s0, s1, _forward
+  bltu  x9, x10, _start
+    bgeu  x11, x12, _forward
+
+_forward  :
+    # Memory Loads (I-Type) with irregular parenthesis spacing
+    lb    x13, -2048 ( x2 )
+  lh x14,   0x7FF(x3  )             # 0x7FF = 2047 (Max positive 12-bit)
+    lw x15, 0b100 (x4)
+    lbu   x16, 0( x5)
+ lhu x17 , -0x10 (x6 )              # Negative hex literal
+
+    # Memory Stores (S-Type)
+    sb x13, 0(x14)
+     sh x15, -10( x16 )
+sw x17,   2047(  x0)
+
+    # I-Type ALU operations
+    addi x1, x1, -1
+  slti x2, x2, 0x3E8                # 1000 in hex
+    sltiu x3, x3, 0b1111            # 15 in binary
+   xori x4, x4, 017                 # octal 15 (if supported, else standard 17)
+    ori x5, x5, 2047
+ andi x6, x6, -2048
+
+    # I-Type Shifts (shamt must be strictly 0-31)
+    slli x7, x7, 31
+    srli x8, x8, 0x1F               # 31 in hex
+  srai x9, x9, 0b1010               # 10 in binary
+
+    # R-Type ALU operations
+    add  x10, x11, x12
+    sub x13, x14, x15
+ sll x16, x17, x18
+    slt x19, x20, x21
+    sltu x22, x23, x24
+    xor x25, x26, x27
+  srl x28, x29, x30
+    sra x31, x0, x1
+    or x2, x3, x4
+  and x5, x6, x7
+
+    # System & Miscellaneous
+  #fence                             # Default pseudo-instruction
+ fence   r, rw                       # 2-arg base instruction
+    ecall
+ ebreak                             // End of program

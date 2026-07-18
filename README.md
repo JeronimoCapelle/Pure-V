@@ -1,94 +1,74 @@
-# Pure RV32I: A Zero-Dependency RISC-V Assembler
+# Pure-V: The Universal Bare-Metal RISC-V Assembler
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![Rust](https://img.shields.io/badge/rust-stable-orange)
-![Architecture](https://img.shields.io/badge/arch-rv32i-blue)
+![Dependencies](https://img.shields.io/badge/dependencies-0-success)
+![Target](https://img.shields.io/badge/arch-RV32%20%7C%20RV64-blue)
 ![License](https://img.shields.io/badge/License-CC0%201.0-red)
 
-A rigorous, purist RISC-V 32I assembler written entirely from scratch in Rust. 
+A rigorous, purist RISC-V assembler written entirely from scratch in Rust. 
 
-Developed as a capstone-level pursuit in Informatics Engineering, this tool-chain deliberately bypasses high-level parsing libraries (like `regex` or `nom`). It was engineered to demonstrate a foundational mastery of bare-metal systems programming, compiler architecture, memory safety, and the intricate hardware quirks of the RISC-V instruction set.
+Pure-V is engineered to be a comprehensive systems programming tool. It deliberately bypasses high-level parsing libraries (like `regex` or `nom`) in favor of a custom, multi-phase compiler pipeline. The ultimate objective is to provide a mathematically infallible, `#![no_std]` compliant assembler capable of compiling any standard RISC-V extension (RV32/64-IMAFD) entirely on bare metal.
 
 ## 🧠 Engineering Philosophy & Architecture
 
-This is not a simple script that maps strings to numbers. It is a fully decoupled, multi-phase compiler pipeline. The architecture forces a strict separation of concerns, ensuring that memory references, bit-wise operations, and endianness are handled exactly as physical hardware expects.
+This toolchain enforces a strict separation of concerns, ensuring that lexical analysis, macro desugaring, and bitwise binary generation are perfectly decoupled.
 
 ```mermaid
 graph TD;
     A[Raw .s File] -->|Lexical Analysis| B(Token Stream)
-    B -->|Symbol Resolution| C{Label Hash Map}
-    B --> D(Stripped Token Stream)
+    B -->|Macro Desugaring| C(Expanded Token Stream)
+    C -->|Symbol Resolution| D{Label Hash Map & PC Tracking}
     C -->|Syntax Analysis| E[AST / Instruction Structs]
-    D -->|Syntax Analysis| E
+    D --> E
     E -->|Code Generation| F(Packed 32-bit u32)
     F -->|Endian Conversion| G[Little-Endian u8 Bytes]
-    G --> H[(output.bin)]
 
 ```
 
-### Core Technical Achievements
+### Core Technical Directives
 
-* **Zero External Dependencies:** The lexical analyzer and recursive descent parser are built entirely from standard Rust types, paving the way for eventual `#![no_std]` embedded compliance.
-* **Compiler-Injected Error Tracking:** Implements a custom `AssemblerError` struct that uses Rust's `Location::caller()` at build-time to trace exactly where a parsing fault originated in the pipeline without ungraceful thread panicking.
-* **Mathematical Bit-Scrambling:** Native handling of RISC-V's notoriously complex immediate packing (e.g., S-Type and B-Type bit fracturing, Two's Complement sign-extension, and LSB hardware clearing).
-* **Maximum Architectural Rigidity:** The code base is locked down with hyper-strict `Cargo.toml` linting, strictly forbidding `unwrap`, arithmetic side-effects, implicit conversions, and panics to guarantee mathematical infallibility.
+* **Zero External Dependencies:** The pipeline is built exclusively with standard Rust types. The architecture is currently being refactored to drop `std` entirely, enabling the assembler itself to run on embedded microcontrollers.
+* **Maximum Architectural Rigidity:** The codebase is locked down with hyper-strict `Cargo.toml` linting, strictly forbidding `unwrap`, arithmetic side-effects, implicit conversions, and panics.
+* **Compiler-Injected Error Tracking:** Implements a custom `AssemblerError` struct that traces exactly where a parsing fault originated in the pipeline without ungraceful thread panicking.
+* **Golden Master Testing:** Output binaries are strictly verified against the official `riscv64-unknown-elf` GNU toolchain via automated CI pipelines.
 
-## 🚀 Quick Start
+## 🚀 Current State: v0.1.0
 
-Ensure you have [Rust and Cargo](https://rustup.rs/) installed.
+The current release provides a highly robust foundation, fully supporting the **RV32I Base Integer Instruction Set** (excluding variable-width CSR/System operations).
 
-1. **Clone the repository:**
+Supported instructions include: `add`, `addi`, `sub`, `and`, `andi`, `or`, `ori`, `xor`, `xori`, `slli`, `srli`, `lw`, `lb`, `sw`, `sb`, `beq`, `bne`, `blt`, `bge`, `jal`, `jalr`, and many more.
 
-```bash
-git clone [https://github.com/JeronimoCapelle/Pure-RISCV32I-Assembler.git](https://github.com/JeronimoCapelle/Pure-RISCV32I-Assembler.git)
-cd Pure-RISCV32I-Assembler
-
-```
-
-2. **Build the assembler:**
+### Quick Start
 
 ```bash
+git clone [https://github.com/JeronimoCapelle/Pure-V.git](https://github.com/JeronimoCapelle/Pure-V.git)
+cd Pure-V
 cargo build --release
+cargo run --release -- input.txt -o output.bin
 
 ```
 
-3. **Assemble a file:**
+## 🗺️ The Expansion Roadmap
 
-```bash
-cargo run --release -- input.txt
+Pure-V is designed to scale horizontally. The upcoming milestones focus on expanding ISA support, eliminating overhead, and proving performance.
 
-```
+### Phase 1: Macro Expansion & Pipeline Refactoring
 
-*This will currently generate a little-endian `output.bin` file in the root directory, ready to be flashed to memory or run in a RISC-V simulator.*
+* [ ] Implement Token-Level Macro Desugaring (translating pseudo-instructions like `li` and `call` into base instructions before symbol resolution).
+* [ ] Support dynamic PC-counter tracking to handle variable-width instruction outputs.
 
-## ⚙️ Supported Instructions (v0.1.0)
+### Phase 2: ISA Expansion
 
-The assembler currently supports 28 core instructions from the RV32I base integer instruction set, alongside label generation and offset resolution:
+* [ ] Implement the remaining RV32I system instructions (`ecall`, `ebreak`, `fence`).
+* [ ] Extend architecture to **RV64I** (Doubleword memory operations and `*W` arithmetic).
+* [ ] Modularize `Instruction` traits to support the **'M'** (Multiplication) and **'F'/'D'** (Floating Point) extensions.
 
-* **Arithmetic & Logical:** `add`, `addi`, `sub`, `and`, `andi`, `or`, `ori`, `xor`, `xori`, `slli`, `srli`, `srai`, `slti`, `sltiu`
-* **Memory Load/Store:** `lw`, `lb`, `sw`, `sb`, `lui`, `auipc`
-* **Control Flow (Branching & Jumps):** `beq`, `bne`, `blt`, `bge`, `bltu`, `bgeu`, `jal`, `jalr`
+### Phase 3: Embedded Compliance & Performance
 
-## 🧪 Testing Methodology
-
-This project utilizes both module-level Unit Tests and full-pipeline Integration Tests. The integration test suite compiles complex, multi-instruction strings (containing forward/backward branching, memory offsets, and negative immediates) and strictly verifies the resultant `u8` byte array against verified target architectures.
-
-Run the test suite via Cargo:
-
-```bash
-cargo test
-
-```
-
-## 🗺️ Roadmap
-
-The v0.1.0 foundation is built, but the architecture is designed to scale. Upcoming milestones include:
-
-* [ ] **CLI Flexibility:** Implement output file path arguments (e.g., `-o custom.bin`).
-* [ ] **Instruction Parity:** Implement the remaining instructions of the `RV32I` base specification.
-* [ ] **Pseudo-Instruction Expansion:** Support for `li`, `mv`, `ret`, `call`, and `j`.
-* [ ] **Automated GNU Binutils Verification:** Transition tests from hard-coded byte arrays to an automated CI pipeline that tests against the official `riscv64-unknown-elf` GNU tool-chain.
-* [ ] **`#![no_std]` Compliance:** Re-factor file I/O out of the core library to allow the assembler to run on bare-metal embedded micro-controllers.
+* [ ] Complete `#![no_std]` compliance by decoupling File I/O from the core parsing and generation logic.
+* [ ] Establish automated performance benchmarking (parsing speed, memory footprint, and generation time) against other standard assemblers.
+* [ ] Output to standard object files (`.o` / `.elf`).
 
 ## ⚖️ License
 

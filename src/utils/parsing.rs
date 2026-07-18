@@ -1,12 +1,23 @@
 //! Module containing functions for parsing strings to numerics
 use core::num::ParseIntError;
+use core::ops::Neg;
 
 /// Utility function for parsing string to numeric from different bases, decimal, octal, hex, and binary
 pub fn interpret_literal(value: &str) -> Result<i128, ParseIntError> {
+    let neg: bool;
+
+    let value = if let Some(a) = value.strip_prefix("-") {
+        neg = true;
+        a
+    } else {
+        neg = false;
+        value
+    };
+
     let _ = match value.strip_prefix("0b") {
         Some(a) => {
             let a = i128::from_str_radix(a, 2)?;
-            return Ok(a);
+            return Ok(if neg { a.neg() } else { a });
         }
         None => 0,
     };
@@ -14,7 +25,7 @@ pub fn interpret_literal(value: &str) -> Result<i128, ParseIntError> {
     let _ = match value.strip_prefix("0x") {
         Some(a) => {
             let a = i128::from_str_radix(a, 16)?;
-            return Ok(a);
+            return Ok(if neg { a.neg() } else { a });
         }
         _ => 0,
     };
@@ -26,12 +37,15 @@ pub fn interpret_literal(value: &str) -> Result<i128, ParseIntError> {
             } else {
                 {
                     let a = i128::from_str_radix(a, 8)?;
-                    return Ok(a);
+                    return Ok(if neg { a.neg() } else { a });
                 }
             }
         }
         _ => 0,
     };
 
-    value.parse()
+    match value.parse::<i128>() {
+        Ok(a) => Ok(if neg { a.neg() } else { a }),
+        Err(a) => Err(a),
+    }
 }

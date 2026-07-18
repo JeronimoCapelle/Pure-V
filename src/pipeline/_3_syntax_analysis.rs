@@ -262,19 +262,15 @@ fn generate_utype(operands: &[Token]) -> Result<UType, SyntaxError> {
     })
 }
 
-/// generate a ``UType`` instruction struct from provided ``instruction`` ``operands``
+/// generate a ``FType`` instruction struct from provided ``instruction`` ``operands``
 fn generate_ftype(operands: &[Token]) -> Result<FType, SyntaxError> {
-    if operands.len() != 5
-        || !operands[0].eq(&Token::OpeningParenthesis)
-        || !operands[2].eq(&Token::Comma)
-        || !operands[4].eq(&Token::ClosingParenthesis)
-    {
+    if operands.len() != 3 || !operands[1].eq(&Token::Comma) {
         return Err(WrongArguments);
     }
 
     Ok(FType {
-        pred: CharFlag::new(&operands[1])?,
-        succ: CharFlag::new(&operands[3])?,
+        pred: CharFlag::new(&operands[0])?,
+        succ: CharFlag::new(&operands[2])?,
     })
 }
 
