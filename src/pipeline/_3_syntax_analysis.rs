@@ -71,6 +71,9 @@ fn parse_instruction(
         "xori" => Instruction::Xori(generate_itype(operands)?),
         "ori" => Instruction::Ori(generate_itype(operands)?),
 
+        "slti" => Instruction::Slti(generate_itype(operands)?),
+        "sltiu" => Instruction::Sltiu(generate_itype(operands)?),
+
         "slli" => Instruction::Slli(generate_itype_shifts(operands)?),
         "srli" => Instruction::Srli(generate_itype_shifts(operands)?),
         "srai" => Instruction::Srai(generate_itype_shifts(operands)?),

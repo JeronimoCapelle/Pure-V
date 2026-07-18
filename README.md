@@ -63,9 +63,9 @@ cargo run --release -- input.txt
 
 ## ⚙️ Supported Instructions (v0.1.0)
 
-The assembler currently supports 26 core instructions from the RV32I base integer instruction set, alongside label generation and offset resolution:
+The assembler currently supports 28 core instructions from the RV32I base integer instruction set, alongside label generation and offset resolution:
 
-* **Arithmetic & Logical:** `add`, `addi`, `sub`, `and`, `andi`, `or`, `ori`, `xor`, `xori`, `slli`, `srli`, `srai`
+* **Arithmetic & Logical:** `add`, `addi`, `sub`, `and`, `andi`, `or`, `ori`, `xor`, `xori`, `slli`, `srli`, `srai`, `slti`, `sltiu`
 * **Memory Load/Store:** `lw`, `lb`, `sw`, `sb`, `lui`, `auipc`
 * **Control Flow (Branching & Jumps):** `beq`, `bne`, `blt`, `bge`, `bltu`, `bgeu`, `jal`, `jalr`
 

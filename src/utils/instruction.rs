@@ -14,6 +14,8 @@ pub enum Instruction {
     Xori(IType),
     Ori(IType),
     Andi(IType),
+    Slti(IType),
+    Sltiu(IType),
 
     // ---
     Slli(ITypeShifts),

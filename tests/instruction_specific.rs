@@ -92,6 +92,20 @@ fn andi() {
 }
 
 #[test]
+fn slti() {
+    let result = assemble_string("slti x16, x31,2030").unwrap();
+    let expected = vec![0x13, 0xa8, 0xef, 0x7e];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn sltiu() {
+    let result = assemble_string("sltiu x16, x31,2030").unwrap();
+    let expected = vec![0x13, 0xb8, 0xef, 0x7e];
+    assert_eq!(result, expected);
+}
+
+#[test]
 fn slli() {
     let result = assemble_string("slli x16, x31,30").unwrap();
     let expected = vec![0x13, 0x98, 0xef, 0x01];

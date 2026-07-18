@@ -24,6 +24,8 @@ pub const LW_FUNCT3: u32 = 0b010;
 pub const SLLI_FUNCT3: u32 = 0b001;
 pub const SRLI_FUNCT3: u32 = 0b101;
 pub const SRAI_FUNCT3: u32 = 0b101;
+pub const SLTI_FUNCT3: u32 = 0b010;
+pub const SLTIU_FUNCT3: u32 = 0b011;
 
 // funct7
 pub const ADD_FUNCT7: u32 = 0b000_0000;
@@ -266,6 +268,21 @@ fn encode_instruction(instruction: Instruction) -> u32 {
             SRAI_FUNCT3,
             itype_shifts.rs1.encode(),
             itype_shifts.shamt.encode() | SRAI_FUNCT7 << 5,
+        ),
+        Instruction::Slti(itype) => encode_itype(
+            ITYPE_OPCODE,
+            itype.rd.encode(),
+            SLTI_FUNCT3,
+            itype.rs1.encode(),
+            itype.imm.encode(),
+        ),
+
+        Instruction::Sltiu(itype) => encode_itype(
+            ITYPE_OPCODE,
+            itype.rd.encode(),
+            SLTIU_FUNCT3,
+            itype.rs1.encode(),
+            itype.imm.encode(),
         ),
     }
 }
