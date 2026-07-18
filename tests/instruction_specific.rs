@@ -22,9 +22,50 @@ fn sub() {
 }
 
 #[test]
+fn sll() {
+    let result = assemble_string("sll x1, x10, x5").unwrap();
+    let expected = vec![0xb3, 0x10, 0x55, 0x00];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn srl() {
+    let result = assemble_string("srl x1, x10, x5").unwrap();
+    let expected = vec![0xb3, 0x50, 0x55, 0x00];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn sra() {
+    let result = assemble_string("sra x1, x10, x5").unwrap();
+    let expected = vec![0xb3, 0x50, 0x55, 0x40];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn slt() {
+    let result = assemble_string("slt x1, x10, x5").unwrap();
+    let expected = vec![0xb3, 0x20, 0x55, 0x00];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn sltu() {
+    let result = assemble_string("sltu x1, x10, x5").unwrap();
+    let expected = vec![0xb3, 0x30, 0x55, 0x00];
+    assert_eq!(result, expected);
+}
+#[test]
 fn lw() {
     let result = assemble_string("lw x1, 34(x13)").unwrap();
     let expected = vec![0x83, 0xa0, 0x26, 0x02];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn lh() {
+    let result = assemble_string("lh x1, 34(x13)").unwrap();
+    let expected = vec![0x83, 0x90, 0x26, 0x02];
     assert_eq!(result, expected);
 }
 
@@ -34,11 +75,31 @@ fn lb() {
     let expected = vec![0x83, 0x80, 0x26, 0x02];
     assert_eq!(result, expected);
 }
+#[test]
+fn lhu() {
+    let result = assemble_string("lhu x1, 34(x13)").unwrap();
+    let expected = vec![0x83, 0xd0, 0x26, 0x02];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn lbu() {
+    let result = assemble_string("lbu x1, 34(x13)").unwrap();
+    let expected = vec![0x83, 0xc0, 0x26, 0x02];
+    assert_eq!(result, expected);
+}
 
 #[test]
 fn sw() {
     let result = assemble_string("sw x1, 34(x13)").unwrap();
     let expected = vec![0x23, 0xa1, 0x16, 0x02];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn sh() {
+    let result = assemble_string("sh x1, 34(x13)").unwrap();
+    let expected = vec![0x23, 0x91, 0x16, 0x02];
     assert_eq!(result, expected);
 }
 
@@ -191,5 +252,26 @@ fn lui() {
 fn auipc() {
     let result = assemble_string("auipc x10,100").unwrap();
     let expected = vec![0x17, 0x45, 0x06, 0x00];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn fence() {
+    let result = assemble_string("fence (iw, rw)").unwrap();
+    let expected = vec![0x0f, 0x00, 0x30, 0x09];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn ebreak() {
+    let result = assemble_string("ebreak").unwrap();
+    let expected = vec![0x73, 0x00, 0x10, 0x00];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn ecall() {
+    let result = assemble_string("ecall").unwrap();
+    let expected = vec![0x73, 0x00, 0x00, 0x00];
     assert_eq!(result, expected);
 }

@@ -148,6 +148,9 @@ pub enum SyntaxError {
     /// Arguments provided weren't correct with what the instruction indicated. (Make this more verbose)
     WrongArguments,
 
+    /// Flags provided for fence were incorrect
+    WrongFlags,
+
     /// The token type provided is not what was expected. (Literal when looking for a register name, or an Identifier when computing an offset)
     InvalidToken(Token),
 
@@ -189,6 +192,10 @@ impl Debug for SyntaxError {
                 write!(f, " Invalid arguments were passed to this instruction ")
             }
             Self::InvalidToken(token) => write!(f, " Did not expect the token {{{token:?}}} "),
+            Self::WrongFlags => write!(
+                f,
+                "Invalid flags were passed to the instruction, valid flags are iorw"
+            ),
         }
     }
 }

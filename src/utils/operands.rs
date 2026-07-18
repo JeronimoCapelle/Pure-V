@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use crate::utils::{
     error::SyntaxError::{
         self, BiggerValue, Internal, InvalidToken, NonExistentRegister, OddValue, SmallerValue,
-        TexttoNumeric, Translation,
+        TexttoNumeric, Translation, WrongArguments, WrongFlags,
     },
     parsing::interpret_literal,
     token::Token,
@@ -263,6 +263,83 @@ impl Constant {
     /// Encodes the ``Constant`` value into a 20-bit unsigned integer.
     pub(crate) const fn encode(&self) -> u32 {
         self.0 & 0xFFFFF
+    }
+}
+#[derive(PartialEq, Eq, Debug)]
+
+/// 4-bit flags for the fence instruction
+pub struct CharFlag {
+    /// Flag for I/O input
+    i: bool,
+    /// Flag for I/O output
+    o: bool,
+    /// Flag for reading
+    r: bool,
+    /// Flag for writing
+    w: bool,
+}
+
+impl CharFlag {
+    /// Creates a ``CharFlag`` from an Identifier Token, flags are checked.
+    pub(crate) fn new(token: &Token) -> Result<Self, SyntaxError> {
+        let Token::Identifier(text) = token else {
+            return Err(InvalidToken(token.clone()));
+        };
+
+        if text.len() > 4 {
+            return Err(WrongArguments);
+        }
+
+        let mut i_flag: bool = false;
+        let mut o_flag: bool = false;
+        let mut r_flag: bool = false;
+        let mut w_flag: bool = false;
+
+        for char in text.chars() {
+            match char {
+                'i' => {
+                    if i_flag {
+                        return Err(WrongFlags);
+                    }
+                    i_flag = true;
+                }
+                'o' => {
+                    if o_flag {
+                        return Err(WrongFlags);
+                    }
+                    o_flag = true;
+                }
+                'r' => {
+                    if r_flag {
+                        return Err(WrongFlags);
+                    }
+                    r_flag = true;
+                }
+                'w' => {
+                    if w_flag {
+                        return Err(WrongFlags);
+                    }
+                    w_flag = true;
+                }
+                _ => return Err(WrongFlags),
+            }
+        }
+
+        Ok(Self {
+            i: i_flag,
+            o: o_flag,
+            r: r_flag,
+            w: w_flag,
+        })
+    }
+    /// Encodes the ``CharFlag`` value into a 4-bit unsigned integer.
+    pub(crate) fn encode(&self) -> u32 {
+        let shifted_i = u32::from(self.i) << 3;
+        let shifted_o = u32::from(self.o) << 2;
+        let shifted_r = u32::from(self.r) << 1;
+        let shifted_w = u32::from(self.w);
+
+        shifted_w | shifted_r | shifted_o | shifted_i
     }
 }
 //--------------------------------------------------

@@ -1,5 +1,7 @@
 //! Module for every instruction type and its operands
-use crate::utils::operands::{BLabel, Constant, Immediate, JLabel, Offset, Register, Shamt};
+use crate::utils::operands::{
+    BLabel, CharFlag, Constant, Immediate, JLabel, Offset, Register, Shamt,
+};
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum Instruction {
@@ -8,6 +10,13 @@ pub enum Instruction {
     Xor(RType),
     Or(RType),
     And(RType),
+
+    // ---
+    Sll(RType),
+    Srl(RType),
+    Sra(RType),
+    Slt(RType),
+    Sltu(RType),
 
     //---
     Addi(IType),
@@ -27,10 +36,14 @@ pub enum Instruction {
 
     // ---
     Lw(ITypeMemory),
+    Lh(ITypeMemory),
     Lb(ITypeMemory),
+    Lhu(ITypeMemory),
+    Lbu(ITypeMemory),
 
     // ---
     Sb(STypeMemory),
+    Sh(STypeMemory),
     Sw(STypeMemory),
 
     // ---
@@ -47,6 +60,13 @@ pub enum Instruction {
 
     // ---
     Jal(JType),
+
+    //---
+    Fence(FType),
+
+    //---
+    Ecall,
+    Ebreak,
 }
 
 //--------------------------------------------------
@@ -101,4 +121,9 @@ pub struct ITypeJump {
 pub struct UType {
     pub rd: Register,
     pub constant: Constant,
+}
+#[derive(PartialEq, Eq, Debug)]
+pub struct FType {
+    pub pred: CharFlag,
+    pub succ: CharFlag,
 }

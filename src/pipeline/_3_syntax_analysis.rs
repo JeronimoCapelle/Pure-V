@@ -8,10 +8,10 @@ use crate::utils::{
         SyntaxError::{self, Internal, WrongArguments},
     },
     instruction::{
-        BType, IType, ITypeJump, ITypeMemory, ITypeShifts, Instruction, JType, RType, STypeMemory,
-        UType,
+        BType, FType, IType, ITypeJump, ITypeMemory, ITypeShifts, Instruction, JType, RType,
+        STypeMemory, UType,
     },
-    operands::{BLabel, Constant, Immediate, JLabel, Offset, Register, Shamt},
+    operands::{BLabel, CharFlag, Constant, Immediate, JLabel, Offset, Register, Shamt},
     token::Token,
 };
 
@@ -66,6 +66,12 @@ fn parse_instruction(
         "and" => Instruction::And(generate_rtype(operands)?),
         "xor" => Instruction::Xor(generate_rtype(operands)?),
 
+        "sll" => Instruction::Sll(generate_rtype(operands)?),
+        "srl" => Instruction::Srl(generate_rtype(operands)?),
+        "sra" => Instruction::Sra(generate_rtype(operands)?),
+        "slt" => Instruction::Slt(generate_rtype(operands)?),
+        "sltu" => Instruction::Sltu(generate_rtype(operands)?),
+
         "addi" => Instruction::Addi(generate_itype(operands)?),
         "andi" => Instruction::Andi(generate_itype(operands)?),
         "xori" => Instruction::Xori(generate_itype(operands)?),
@@ -79,9 +85,13 @@ fn parse_instruction(
         "srai" => Instruction::Srai(generate_itype_shifts(operands)?),
 
         "lw" => Instruction::Lw(generate_itype_memory(operands)?),
+        "lh" => Instruction::Lh(generate_itype_memory(operands)?),
         "lb" => Instruction::Lb(generate_itype_memory(operands)?),
+        "lhu" => Instruction::Lhu(generate_itype_memory(operands)?),
+        "lbu" => Instruction::Lbu(generate_itype_memory(operands)?),
 
         "sw" => Instruction::Sw(generate_stype_memory(operands)?),
+        "sh" => Instruction::Sh(generate_stype_memory(operands)?),
         "sb" => Instruction::Sb(generate_stype_memory(operands)?),
 
         "beq" => Instruction::Beq(generate_btype(operands, pc_counter, symbol_table)?),
@@ -97,6 +107,11 @@ fn parse_instruction(
 
         "lui" => Instruction::Lui(generate_utype(operands)?),
         "auipc" => Instruction::Auipc(generate_utype(operands)?),
+
+        "fence" => Instruction::Fence(generate_ftype(operands)?),
+
+        "ebreak" => Instruction::Ebreak,
+        "ecall" => Instruction::Ecall,
         _ => {
             return Err(SyntaxError::NonExistentMnemonic(mnemonic.to_owned()));
         }
@@ -244,6 +259,22 @@ fn generate_utype(operands: &[Token]) -> Result<UType, SyntaxError> {
     Ok(UType {
         rd: Register::new(&operands[0])?,
         constant: Constant::new(&operands[2])?,
+    })
+}
+
+/// generate a ``UType`` instruction struct from provided ``instruction`` ``operands``
+fn generate_ftype(operands: &[Token]) -> Result<FType, SyntaxError> {
+    if operands.len() != 5
+        || !operands[0].eq(&Token::OpeningParenthesis)
+        || !operands[2].eq(&Token::Comma)
+        || !operands[4].eq(&Token::ClosingParenthesis)
+    {
+        return Err(WrongArguments);
+    }
+
+    Ok(FType {
+        pred: CharFlag::new(&operands[1])?,
+        succ: CharFlag::new(&operands[3])?,
     })
 }
 

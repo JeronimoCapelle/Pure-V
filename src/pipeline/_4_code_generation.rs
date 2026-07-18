@@ -17,15 +17,24 @@ pub const ORI_FUNCT3: u32 = 0b110;
 pub const OR_FUNCT3: u32 = 0b110;
 pub const ANDI_FUNCT3: u32 = 0b111;
 pub const AND_FUNCT3: u32 = 0b111;
-pub const LB_FUNCT3: u32 = 0b000;
-pub const SB_FUNCT3: u32 = 0b000;
-pub const SW_FUNCT3: u32 = 0b010;
 pub const LW_FUNCT3: u32 = 0b010;
+pub const LH_FUNCT3: u32 = 0b001;
+pub const LB_FUNCT3: u32 = 0b000;
+pub const LHU_FUNCT3: u32 = 0b101;
+pub const LBU_FUNCT3: u32 = 0b100;
+pub const SB_FUNCT3: u32 = 0b000;
+pub const SH_FUNCT3: u32 = 0b001;
+pub const SW_FUNCT3: u32 = 0b010;
 pub const SLLI_FUNCT3: u32 = 0b001;
 pub const SRLI_FUNCT3: u32 = 0b101;
 pub const SRAI_FUNCT3: u32 = 0b101;
 pub const SLTI_FUNCT3: u32 = 0b010;
 pub const SLTIU_FUNCT3: u32 = 0b011;
+pub const SLL_FUNCT3: u32 = 0b001;
+pub const SRL_FUNCT3: u32 = 0b101;
+pub const SRA_FUNCT3: u32 = 0b101;
+pub const SLT_FUNCT3: u32 = 0b010;
+pub const SLTU_FUNCT3: u32 = 0b011;
 
 // funct7
 pub const ADD_FUNCT7: u32 = 0b000_0000;
@@ -36,11 +45,22 @@ pub const AND_FUNCT7: u32 = 0b000_0000;
 pub const SLLI_FUNCT7: u32 = 0b000_0000;
 pub const SRLI_FUNCT7: u32 = 0b000_0000;
 pub const SRAI_FUNCT7: u32 = 0b010_0000;
+pub const SLL_FUNCT7: u32 = 0b000_0000;
+pub const SRL_FUNCT7: u32 = 0b000_0000;
+pub const SLT_FUNCT7: u32 = 0b000_0000;
+pub const SLTU_FUNCT7: u32 = 0b000_0000;
+pub const SRA_FUNCT7: u32 = 0b010_0000;
+
+// funct12
+pub const EBREAK_FUNCT12: u32 = 0b0000_0000_0001;
+pub const ECALL_FUNCT12: u32 = 0b0000_0000_0000;
 
 // opcode
 pub const RTYPE_OPCODE: u32 = 0b011_0011;
 pub const BTYPE_OPCODE: u32 = 0b110_0011;
 pub const JTYPE_OPCODE: u32 = 0b110_1111;
+pub const ETYPE_OPCODE: u32 = 0b111_0011;
+pub const FTYPE_OPCODE: u32 = 0b000_1111;
 pub const ITYPE_OPCODE: u32 = 0b001_0011;
 pub const ITYPE_SHIFTS_OPCODE: u32 = 0b001_0011;
 pub const ITYPE_MEMORY_OPCODE: u32 = 0b000_0011;
@@ -284,6 +304,86 @@ fn encode_instruction(instruction: Instruction) -> u32 {
             itype.rs1.encode(),
             itype.imm.encode(),
         ),
+        Instruction::Sh(stype_memory) => encode_stype(
+            STYPE_MEMORY_OPCODE,
+            stype_memory.offset.encode(),
+            SH_FUNCT3,
+            stype_memory.rbase.encode(),
+            stype_memory.rs.encode(),
+        ),
+        Instruction::Lh(itype_memory) => encode_itype(
+            ITYPE_MEMORY_OPCODE,
+            itype_memory.rd.encode(),
+            LH_FUNCT3,
+            itype_memory.rs1.encode(),
+            itype_memory.offset.encode(),
+        ),
+
+        Instruction::Lhu(itype_memory) => encode_itype(
+            ITYPE_MEMORY_OPCODE,
+            itype_memory.rd.encode(),
+            LHU_FUNCT3,
+            itype_memory.rs1.encode(),
+            itype_memory.offset.encode(),
+        ),
+
+        Instruction::Lbu(itype_memory) => encode_itype(
+            ITYPE_MEMORY_OPCODE,
+            itype_memory.rd.encode(),
+            LBU_FUNCT3,
+            itype_memory.rs1.encode(),
+            itype_memory.offset.encode(),
+        ),
+
+        Instruction::Sll(rtype) => encode_rtype(
+            RTYPE_OPCODE,
+            rtype.rd.encode(),
+            SLL_FUNCT3,
+            rtype.rs1.encode(),
+            rtype.rs2.encode(),
+            SLL_FUNCT7,
+        ),
+
+        Instruction::Srl(rtype) => encode_rtype(
+            RTYPE_OPCODE,
+            rtype.rd.encode(),
+            SRL_FUNCT3,
+            rtype.rs1.encode(),
+            rtype.rs2.encode(),
+            SRL_FUNCT7,
+        ),
+
+        Instruction::Sra(rtype) => encode_rtype(
+            RTYPE_OPCODE,
+            rtype.rd.encode(),
+            SRA_FUNCT3,
+            rtype.rs1.encode(),
+            rtype.rs2.encode(),
+            SRA_FUNCT7,
+        ),
+
+        Instruction::Slt(rtype) => encode_rtype(
+            RTYPE_OPCODE,
+            rtype.rd.encode(),
+            SLT_FUNCT3,
+            rtype.rs1.encode(),
+            rtype.rs2.encode(),
+            SLT_FUNCT7,
+        ),
+
+        Instruction::Sltu(rtype) => encode_rtype(
+            RTYPE_OPCODE,
+            rtype.rd.encode(),
+            SLTU_FUNCT3,
+            rtype.rs1.encode(),
+            rtype.rs2.encode(),
+            SLTU_FUNCT7,
+        ),
+        Instruction::Fence(ftype) => {
+            encode_ftype(FTYPE_OPCODE, ftype.succ.encode(), ftype.pred.encode())
+        }
+        Instruction::Ecall => encode_etype(ETYPE_OPCODE, ECALL_FUNCT12),
+        Instruction::Ebreak => encode_etype(ETYPE_OPCODE, EBREAK_FUNCT12),
     }
 }
 
@@ -346,4 +446,17 @@ const fn encode_utype(opcode: u32, rd: u32, imm: u32) -> u32 {
     let imm = imm << 12;
 
     imm | rd | opcode
+}
+
+const fn encode_ftype(opcode: u32, succ: u32, pred: u32) -> u32 {
+    let succ = succ << 20;
+    let pred = pred << 24;
+
+    pred | succ | opcode
+}
+
+const fn encode_etype(opcode: u32, funct12: u32) -> u32 {
+    let funct12 = funct12 << 20;
+
+    funct12 | opcode
 }
