@@ -15,7 +15,11 @@ repository = "https://github.com/JeronimoCapelle/pure-v-emu"
 publish = false
 
 [workspace.dependencies]
-goblin = { version = "0.10", default-features = false, features = ["elf32", "elf64", "endian_fd"] }
+goblin = { version = "0.10", default-features = false, features = [
+  "elf32",
+  "elf64",
+  "endian_fd",
+] }
 purev-core = { path = "crates/purev-core" }
 purev-isa = { path = "crates/purev-isa" }
 tracing = "0.1"
