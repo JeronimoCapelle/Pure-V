@@ -1,0 +1,84 @@
+# ==============================================================================
+# CARGO-DENY POLICY CONFIGURATION (v2 Schema)
+# ==============================================================================
+
+[graph]
+all-features = false
+no-default-features = false
+
+# ==============================================================================
+# 1. ADVISORIES (Security, Unmaintained, and Yanked Crates)
+# ==============================================================================
+[advisories]
+version = 2
+yanked = "deny"
+
+# Scopes unmaintained crate checks across the entire dependency graph
+unmaintained = "all"
+
+# Explicit advisory IDs to bypass (with rationale)
+ignore = []
+
+# ==============================================================================
+# 2. LICENSES (Strict Allowlist Policy)
+# ==============================================================================
+[licenses]
+version = 2
+confidence-threshold = 0.8
+
+# Suppresses warnings when allowable licenses aren't present in minimal projects
+unused-allowed-license = "allow"
+
+allow = [
+  # Permissive Open Source
+  "MIT",
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "CC0-1.0",
+  "ISC",
+  "Unicode-DFS-2016",
+  "Unicode-3.0",
+  "Zlib",
+
+  # Copyleft
+  "GPL-3.0-or-later",
+  "GPL-3.0-only",
+  "AGPL-3.0-or-later",
+  "AGPL-3.0-only",
+
+]
+
+# Exceptions for specific third-party crates if needed
+exceptions = []
+
+# Do not fail checks for unpublished/private crates
+[licenses.private]
+ignore = true
+# ==============================================================================
+# 3. BANS (Duplicate Crates & Banned Dependencies)
+# ==============================================================================
+[bans]
+multiple-versions = "warn"
+wildcards = "warn"
+highlight = "all"
+
+# Explicitly banned crates across workspace and transitive dependencies
+deny = [
+  { crate = "lazy_static", wrappers = [
+    "sharded-slab",
+  ], reason = "Replaced by std::sync::LazyLock or OnceLock in modern Rust (permitted only as dev transitive in loom/tracing)" },
+  { crate = "atty", reason = "Replaced by std::io::IsTerminal in modern Rust" },
+]
+
+# Crates skipped from duplicate version detection
+skip = []
+
+# ==============================================================================
+# 4. SOURCES (Registry & Git Supply-Chain Restrictions)
+# ==============================================================================
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

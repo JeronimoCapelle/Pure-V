@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master"]
+    tags: ["v*"]
+    paths-ignore:
+      - "docs/**"
+      - "README.md"
+      - "ARCHITECTURE.md"
+      - "assets/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - "LICENSE"
+  pull_request:
+    branches: ["main", "master"]
+    paths-ignore:
+      - "docs/**"
+      - "README.md"
+      - "ARCHITECTURE.md"
+      - "assets/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - "LICENSE"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  sanity:
+    name: Sanity & File Hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Verify no credentials or oversized files
+        run: |
+          if find . -maxdepth 3 \( -name ".env" -o -name ".env.local" \) | grep -v "/target/" | grep .; then
+            echo "::error::Sensitive .env files detected in repository."
+            exit 1
+          fi
+          OVERSIZED=$(find . -type f -not -path "*/.*/*" -not -path "./target/*" -size +25M)
+          if [ -n "$OVERSIZED" ]; then
+            echo "::error::Files exceeding 25MB detected: $OVERSIZED"
+            exit 1
+          fi
+
+  audit:
+    name: Supply Chain, Deps & Hygiene Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny,cargo-machete,typos-cli,taplo-cli
+      - run: cargo deny check
+      - run: cargo machete
+      - run: typos
+      - run: taplo fmt --check
+
+  quality:
+    name: Build, Test, Docs & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+      - run: cargo fmt --all -- --check
+      - run: cargo check --workspace --all-targets --all-features
+      - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - run: RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --all-features
+      - run: cargo nextest run --workspace --profile ci
+      - run: cargo test --workspace --doc

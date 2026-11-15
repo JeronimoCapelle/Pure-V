@@ -1,0 +1,5 @@
+[files]
+extend-exclude = ["target/**", "Cargo.lock"]
+
+[default.extend-words]
+# Add domain-specific acronyms/identifiers per project

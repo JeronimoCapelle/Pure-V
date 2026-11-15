@@ -1,0 +1,91 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/purev-isa",
+  "crates/purev-asm",
+  "crates/purev-core",
+  "crates/purev-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "AGPL-3.0-or-later"
+repository = "https://github.com/JeronimoCapelle/pure-v-emu"
+publish = false
+
+[workspace.dependencies]
+goblin = { version = "0.10", default-features = false, features = ["elf32", "elf64", "endian_fd"] }
+purev-core = { path = "crates/purev-core" }
+purev-isa = { path = "crates/purev-isa" }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# ==============================================================================
+# LINTS (Strict, Idiomatic & Contributor-Friendly)
+# ==============================================================================
+[workspace.lints.rustdoc]
+broken_intra_doc_links = "warn"
+private_intra_doc_links = "warn"
+
+[workspace.lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = ['cfg(loom)', 'cfg(shuttle)', 'cfg(kani)', 'cfg(fuzzing)']
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+non_ascii_idents = "forbid"
+rust_2018_idioms = { level = "warn", priority = -1 }
+unreachable_pub = "warn"
+unused_qualifications = "warn"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+missing_copy_implementations = "warn"
+
+[workspace.lints.clippy]
+# Core idiomatic & correctness groups
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "deny", priority = -1 }
+style = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+cargo = { level = "warn", priority = -1 }
+
+# High-signal cherry-picked `nursery` lints (avoids experimental false positives)
+use_self = "warn"
+suboptimal_flops = "warn"
+equatable_if_let = "warn"
+derive_partial_eq_without_eq = "warn"
+debug_assert_with_mut_call = "warn"
+
+# Noisy pedantic/cargo rules disabled so you never write ugly workarounds
+multiple_crate_versions = "allow" # Handled by .config/deny.toml
+cargo_common_metadata = "allow"   # Allows publish = false prototypes without dummy keywords
+module_name_repetitions = "allow" # Allows `error::ParseError`
+must_use_candidate = "allow"      # Avoids #[must_use] noise on every getter
+missing_errors_doc = "allow"      # Keeps doc comments concise when Error variants are clear
+missing_panics_doc = "allow"
+similar_names = "allow"           # Allows `lhs`/`rhs` and `src`/`dst`
+too_many_lines = "allow"
+struct_excessive_bools = "allow"  # Common in CLI flag structs
+
+# Surgical `restriction` lints (catch panics, sloppy casts, and hidden clones)
+allow_attributes_without_reason = "warn"
+undocumented_unsafe_blocks = "forbid"
+multiple_unsafe_ops_per_block = "warn"
+dbg_macro = "warn"
+todo = "warn"
+unimplemented = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+unreachable = "warn"
+clone_on_ref_ptr = "warn"
+str_to_string = "warn"
+rest_pat_in_fully_bound_structs = "warn"
+cast_possible_truncation = "warn"
+cast_sign_loss = "warn"
+cast_possible_wrap = "warn"

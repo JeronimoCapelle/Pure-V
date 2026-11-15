@@ -1,0 +1,11 @@
+# Run via `cargo mutants --config .tooling/configs/mutants.toml`
+test_tool = "nextest"
+exclude_globs = [
+  "benches/**",
+  "examples/**",
+  "src/bin/**",
+  "src/main.rs",
+  "src/sync.rs",
+]
+examine_globs = ["src/**/*.rs"]
+minimum_test_timeout = 10.0

@@ -1,0 +1,18 @@
+[package]
+name = "purev-core"
+description = "Core no_std + alloc RV64IMAC emulator engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+goblin = { workspace = true }
+purev-isa = { workspace = true }
+
+[dev-dependencies]
+purev-asm = { path = "../purev-asm" }
+
+[lints]
+workspace = true

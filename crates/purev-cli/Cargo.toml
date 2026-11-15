@@ -1,0 +1,17 @@
+[package]
+name = "purev-cli"
+description = "Desktop runner and test harness for the purev RV64IMAC emulator"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+purev-core = { workspace = true }
+purev-isa = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[lints]
+workspace = true

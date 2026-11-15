@@ -1,0 +1,18 @@
+# .rustfmt.toml
+style_edition = "2024"
+max_width = 100
+newline_style = "Unix"
+
+# Deterministic sorting & minimal Git diffs
+reorder_imports = true
+reorder_modules = true
+match_block_trailing_comma = true
+match_arm_leading_pipes = "Never"
+
+# Idiomatic shorthand rewrites
+use_field_init_shorthand = true
+use_try_shorthand = true
+
+# Balanced line-wrapping heuristics for chains and struct literals
+use_small_heuristics = "Default"
+chain_width = 60

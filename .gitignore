@@ -1,0 +1,35 @@
+# Build Artifacts
+/target/
+guests/*/target/
+**/*.rs.bk
+
+# C/C++ & Native Libraries
+compile_commands.json
+.cache/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+
+# Profiling, PGO/BOLT, Coverage & Mutation Testing
+perf.data*
+flamegraph.svg
+heaptrack.*
+callgrind.out.*
+dhat-heap.json
+*.profraw
+*.profdata
+*.fdata
+lcov.info
+coverage/
+mutants.out/
+
+# SBOM & License Exports
+*.cdx.json
+THIRD_PARTY_LICENSES.html
+
+# Local Environment Secrets
+.env
+.env.*
+!.env.example

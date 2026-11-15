@@ -1,0 +1,11 @@
+[package]
+name = "purev-isa"
+description = "Shared RV64IMAC architectural types, constants, and trap definitions"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
