@@ -1,8 +1,8 @@
-# hart64
+# purev
 
 A deterministic, `#![no_std]` 64-bit RISC-V (`RV64IMAC`) system emulator and two-pass assembler written in Rust. Designed around strict hardware invariants, zero-allocation exception rollback, and a decoupled memory bus capable of running both under a host OS CLI and on bare-metal `x86_64`.
 
-[![CI](https://github.com/YOUR_USERNAME/hart64/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/hart64/actions)
+[![CI](https://github.com/JeronimoCapelle/pure-v-emu/actions/workflows/ci.yml/badge.svg)](https://github.com/JeronimoCapelle/pure-v-emu/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![no_std](https://img.shields.io/badge/core-no__std-orange.svg)](#architecture)
 
@@ -10,7 +10,7 @@ A deterministic, `#![no_std]` 64-bit RISC-V (`RV64IMAC`) system emulator and two
 
 ## Architecture
 
-The core simulation engine (`hart64-core`) has zero dependencies on the host operating system (`#![no_std]` + `alloc`). All external interactions—RAM, MMIO devices, serial consoles, and block storage—route through trait boundaries, allowing the identical CPU core to run inside desktop test harnesses or a bare-metal `x86_64` unikernel.
+The core simulation engine (`purev-core`) has zero dependencies on the host operating system (`#![no_std]` + `alloc`). All external interactions—RAM, MMIO devices, serial consoles, and block storage—route through trait boundaries, allowing the identical CPU core to run inside desktop test harnesses or a bare-metal `x86_64` unikernel.
 
 ```text
  ┌───────────────────────────────────────────────────────────────┐
@@ -40,10 +40,10 @@ The core simulation engine (`hart64-core`) has zero dependencies on the host ope
 
 | Crate         | Environment            | Responsibility                                                                                                                 |
 | :------------ | :--------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
-| `hart64-isa`  | `#![no_std]`           | Shared hardware types (`Addr`, `RegValue`, `Register`), decoded `Instruction` IR, `Trap` cause codes, and runtime `IsaConfig`. |
-| `hart64-asm`  | `#![no_std]` + `alloc` | Two-pass RISC-V assembler (`&str -> Vec<Token> -> Vec<Instruction> -> Vec<u32>`) with custom opcode support.                   |
-| `hart64-core` | `#![no_std]` + `alloc` | Execution engine, 8-slot stack rollback `Journal`, `SystemBus`, MMIO peripherals, `Sv39` MMU, and `goblin` ELF64 loader.       |
-| `hart64-cli`  | `std`                  | Host runner, `riscv-tests` compliance harness, raw-mode UART terminal, and `criterion` benchmarks.                             |
+| `purev-isa`  | `#![no_std]`           | Shared hardware types (`Addr`, `RegValue`, `Register`), decoded `Instruction` IR, `Trap` cause codes, and runtime `IsaConfig`. |
+| `purev-asm`  | `#![no_std]` + `alloc` | Two-pass RISC-V assembler (`&str -> Vec<Token> -> Vec<Instruction> -> Vec<u32>`) with custom opcode support.                   |
+| `purev-core` | `#![no_std]` + `alloc` | Execution engine, 8-slot stack rollback `Journal`, `SystemBus`, MMIO peripherals, `Sv39` MMU, and `goblin` ELF64 loader.       |
+| `purev-cli`  | `std`                  | Host runner, `riscv-tests` compliance harness, raw-mode UART terminal, and `criterion` benchmarks.                             |
 
 ---
 
@@ -75,7 +75,7 @@ The core simulation engine (`hart64-core`) has zero dependencies on the host ope
 cargo test --workspace
 
 # Execute a compiled RV64 ELF binary
-cargo run --release -p hart64-cli -- --isa rv64i path/to/guest.elf
+cargo run --release -p purev-cli -- --isa rv64i path/to/guest.elf
 ```
 
 ---
